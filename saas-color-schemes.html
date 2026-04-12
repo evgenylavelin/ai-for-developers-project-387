@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SaaS Landing Color Schemes</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --page-bg: #f4efe6;
+      --page-text: #1b1d22;
+      --muted: #5d6472;
+      --card-bg: rgba(255, 255, 255, 0.72);
+      --card-border: rgba(27, 29, 34, 0.08);
+      --shadow: 0 24px 60px rgba(27, 29, 34, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Manrope", "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(255, 255, 255, 0.85), transparent 28%),
+        linear-gradient(180deg, #f8f2e9 0%, var(--page-bg) 100%);
+      color: var(--page-text);
+      min-height: 100vh;
+    }
+
+    .shell {
+      width: min(1200px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 48px 0 64px;
+    }
+
+    .hero {
+      display: grid;
+      gap: 20px;
+      margin-bottom: 40px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      width: fit-content;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.75);
+      border: 1px solid rgba(27, 29, 34, 0.08);
+      color: var(--muted);
+      font-size: 14px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      max-width: 900px;
+      font-size: clamp(40px, 7vw, 88px);
+      line-height: 0.96;
+      letter-spacing: -0.05em;
+    }
+
+    .subtitle {
+      max-width: 720px;
+      margin: 0;
+      color: var(--muted);
+      font-size: clamp(18px, 2vw, 22px);
+      line-height: 1.5;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 22px;
+    }
+
+    .theme-card {
+      position: relative;
+      overflow: hidden;
+      border-radius: 28px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(20px);
+      min-height: 560px;
+      isolation: isolate;
+      transition: transform 180ms ease, box-shadow 180ms ease;
+    }
+
+    .theme-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 28px 72px rgba(27, 29, 34, 0.16);
+    }
+
+    .theme-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at top right, rgba(255, 255, 255, 0.22), transparent 34%),
+        linear-gradient(160deg, var(--surface-1), var(--surface-2));
+      z-index: -2;
+    }
+
+    .theme-card::after {
+      content: "";
+      position: absolute;
+      inset: auto -20% -28% 35%;
+      height: 220px;
+      border-radius: 50%;
+      background: var(--glow);
+      filter: blur(40px);
+      opacity: 0.72;
+      z-index: -1;
+    }
+
+    .theme-inner {
+      display: grid;
+      gap: 20px;
+      padding: 26px;
+      height: 100%;
+      color: var(--ink);
+    }
+
+    .topline {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .badge {
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--accent);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .tagline {
+      font-size: 13px;
+      color: var(--soft);
+    }
+
+    .preview {
+      display: grid;
+      gap: 14px;
+      padding: 18px;
+      border-radius: 24px;
+      border: 1px solid var(--line);
+      background: var(--panel);
+    }
+
+    .preview h2 {
+      margin: 0;
+      font-size: 32px;
+      line-height: 1;
+      letter-spacing: -0.04em;
+    }
+
+    .preview p {
+      margin: 0;
+      color: var(--soft);
+      line-height: 1.5;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .button {
+      border: 0;
+      border-radius: 14px;
+      padding: 12px 16px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .button-primary {
+      background: var(--accent);
+      color: var(--accent-ink);
+    }
+
+    .button-secondary {
+      background: transparent;
+      color: var(--ink);
+      border: 1px solid var(--line);
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .stat {
+      padding: 14px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--line);
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 22px;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+
+    .stat span {
+      color: var(--soft);
+      font-size: 13px;
+    }
+
+    .palette {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+    }
+
+    .swatch {
+      display: grid;
+      gap: 8px;
+    }
+
+    .swatch-color {
+      height: 54px;
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      background: var(--swatch);
+    }
+
+    .swatch-label {
+      font-size: 12px;
+      color: var(--soft);
+      line-height: 1.35;
+    }
+
+    .footnote {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: center;
+      color: var(--soft);
+      font-size: 13px;
+    }
+
+    .theme-dawn {
+      --surface-1: #fff4d9;
+      --surface-2: #f1ddd2;
+      --panel: rgba(255, 252, 247, 0.52);
+      --ink: #221f1b;
+      --soft: #685f58;
+      --accent: #d26a33;
+      --accent-ink: #fff8f2;
+      --line: rgba(34, 31, 27, 0.12);
+      --glow: rgba(210, 106, 51, 0.34);
+    }
+
+    .theme-atlas {
+      --surface-1: #10203f;
+      --surface-2: #163b59;
+      --panel: rgba(8, 18, 35, 0.36);
+      --ink: #eef6ff;
+      --soft: #b4c6da;
+      --accent: #6dd3ff;
+      --accent-ink: #0d2940;
+      --line: rgba(238, 246, 255, 0.14);
+      --glow: rgba(109, 211, 255, 0.28);
+    }
+
+    .theme-lime {
+      --surface-1: #f2ffd9;
+      --surface-2: #daf1d2;
+      --panel: rgba(249, 255, 244, 0.5);
+      --ink: #152114;
+      --soft: #4f654d;
+      --accent: #2f9a48;
+      --accent-ink: #f4fff6;
+      --line: rgba(21, 33, 20, 0.12);
+      --glow: rgba(47, 154, 72, 0.26);
+    }
+
+    .theme-signal {
+      --surface-1: #1f1d32;
+      --surface-2: #4d2549;
+      --panel: rgba(18, 14, 32, 0.34);
+      --ink: #fff4fb;
+      --soft: #d4bdd1;
+      --accent: #ff8d5b;
+      --accent-ink: #2f1220;
+      --line: rgba(255, 244, 251, 0.16);
+      --glow: rgba(255, 141, 91, 0.28);
+    }
+
+    @media (max-width: 720px) {
+      .shell {
+        width: min(100% - 20px, 1200px);
+        padding: 28px 0 36px;
+      }
+
+      .theme-card {
+        min-height: auto;
+      }
+
+      .stats,
+      .palette {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .footnote {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="hero">
+      <div class="eyebrow">SaaS Landing Palette Lab</div>
+      <h1>Четыре разные цветовые схемы для лендинга без банального визуала.</h1>
+      <p class="subtitle">
+        Каждая карточка показывает характер бренда, hero-блок, CTA-кнопки, базовые метрики и палитру.
+        Страница подходит как быстрый референс для выбора направления дизайна.
+      </p>
+    </section>
+
+    <section class="grid">
+      <article class="theme-card theme-dawn">
+        <div class="theme-inner">
+          <div class="topline">
+            <span class="badge">Warm Editorial</span>
+            <span class="tagline">Для понятных B2B-продуктов</span>
+          </div>
+          <div class="preview">
+            <h2>Closer deals, calmer interface.</h2>
+            <p>Теплая нейтральная схема с акцентом на доверие, читаемость и дорогую «редакционную» подачу.</p>
+            <div class="actions">
+              <button class="button button-primary">Start free trial</button>
+              <button class="button button-secondary">Watch demo</button>
+            </div>
+          </div>
+          <div class="stats">
+            <div class="stat"><strong>32%</strong><span>выше конверсия CTA</span></div>
+            <div class="stat"><strong>4.8/5</strong><span>оценка onboarding</span></div>
+            <div class="stat"><strong>12 min</strong><span>до первого value moment</span></div>
+          </div>
+          <div class="palette">
+            <div class="swatch"><div class="swatch-color" style="--swatch:#fff4d9"></div><div class="swatch-label">Sand<br>#FFF4D9</div></div>
+            <div class="swatch"><div class="swatch-color" style="--swatch:#f1ddd2"></div><div class="swatch-label">Rose Clay<br>#F1DDD2</div></div>
+            <div class="swatch"><div class="swatch-color" style="--swatch:#d26a33"></div><div class="swatch-label">Burnt Orange<br>#D26A33</div></div>
+            <div class="swatch"><div class="swatch-color" style="--swatch:#685f58"></div><div class="swatch-label">Muted Ink<br>#685F58</div></div>
+            <div class="swatch"><div class="swatch-color" style="--swatch:#221f1b"></div><div class="swatch-label">Headline<br>#221F1B</div></div>
+          </div>
+          <div class="footnote">
+            <span>Подходит для CRM, analytics, legal-tech, finance tooling.</span>
+            <span>Контрастный акцент без холодного enterprise-ощущения.</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="theme-card theme-atlas">
+        <div class="theme-inner">
+          <div class="topline">
+            <span class="badge">Deep Tech</span>
+            <span class="tagline">Для AI, infra, devtools</span>
+          </div>
+          <div class="preview">
+            <h2>Operate at signal speed.</h2>
+            <p>Глубокие сине-графитовые тона и холодный бирюзовый акцент для технологичного и уверенного бренда.</p>
+            <div class="actions">
+              <button class="button button-primary">Book a walkthrough</button>
+              <button class="button button-secondary">See architecture</button>
+            </div>
+          </div>
+          <div class="stats">
+            <div class="stat"><strong>99.98%</strong><span>platform uptime</span></div>
+            <div class="stat"><strong>120 ms</strong><span>median API latency</span></div>
+            <div class="stat"><strong>8x</strong><span>faster deployment loop</span></div>
+          </div>
+          <div class="palette">
+            <div class="swatch"><div class="swatch-color" style="--swatch:#10203f"></div><div class="swatch-label">Midnight<br>#10203F</div></div>
+            <div class="swatch"><div class="swatch-color" style="--swatch:#163b59"></div><div class="swatch-label">Ocean Grid<br>#163B59</div></div>
+            <div class="swatch"><div class="swatch-color" style="--swatch:#6dd3ff"></div><div class="swatch-label">Signal Cyan<br>#6DD3FF</div></div>
+            <div class="swatch"><div class="swatch-color" style="--swatch:#b4c6da"></div><div class="swatch-label">Cloud Text<br>#B4C6DA</div></div>
+            <div class="swatch"><div class="swatch-color" style="--swatch:#eef6ff"></div><div class="swatch-label">Frost White<br>#EEF6FF</div></div>
+          </div>
+          <div class="footnote">
+            <span>Сильное направление для enterprise SaaS с техническим продуктом.</span>
+            <span>Лучше всего работает с диаграммами, dashboard preview и motion.</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="theme-card theme-lime">
+        <div class="theme-inner">
+          <div class="topline">
+            <span class="badge">Fresh Utility</span>
+            <span class="tagline">Для productivity и ops</span>
+          </div>
+          <div class="preview">
+            <h2>Make every workflow feel lighter.</h2>
+            <p>Светлая зеленая схема с ощущением скорости, чистоты и аккуратной операционной эффективности.</p>
+            <div class="actions">
+              <button class="button button-primary">Try 14 days free</button>
+              <button class="button button-secondary">View use cases</button>
+            </div>
+          </div>
+          <div class="stats">
+            <div class="stat"><strong>41%</strong><span>меньше ручных задач</span></div>
+            <div class="stat"><strong>3.2x</strong><span>быстрее командный rollout</span></div>
+            <div class="stat"><strong>18k</strong><span>авто-действий в неделю</span></div>
+          </div>
+          <div class="palette">
+            <div class="swatch"><div class="swatch-color" style="--swatch:#f2ffd9"></div><div class="swatch-label">Lime Mist<br>#F2FFD9</div></div>
+            <div class="swatch"><div class="swatch-color" style="--swatch:#daf1d2"></div><div class="swatch-label">Leaf Wash<br>#DAF1D2</div></div>
+            <div class="swatch"><div class="swatch-color" style="--swatch:#2f9a48"></div><div class="swatch-label">Action Green<br>#2F9A48</div></div>
+            <div class="swatch"><div class="swatch-color" style="--swatch:#4f654d"></div><div class="swatch-label">Muted Forest<br>#4F654D</div></div>
+            <div class="swatch"><div class="swatch-color" style="--swatch:#152114"></div><div class="swatch-label">Deep Text<br>#152114</div></div>
+          </div>
+          <div class="footnote">
+            <span>Хорошо раскрывает продукты про автоматизацию, операции и самообслуживание.</span>
+            <span>Даёт чистый SaaS-вид без стерильного white-on-blue шаблона.</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="theme-card theme-signal">
+        <div class="theme-inner">
+          <div class="topline">
+            <span class="badge">Bold Contrast</span>
+            <span class="tagline">Для growth и sales-tech</span>
+          </div>
+          <div class="preview">
+            <h2>Launch campaigns with more edge.</h2>
+            <p>Темная драматичная палитра с теплым коралловым акцентом для продуктов, которым нужен напор и энергия.</p>
+            <div class="actions">
+              <button class="button button-primary">Get pricing</button>
+              <button class="button button-secondary">Explore templates</button>
+            </div>
+          </div>
+          <div class="stats">
+            <div class="stat"><strong>27%</strong><span>рост reply rate</span></div>
+            <div class="stat"><strong>2.4x</strong><span>быстрее запуск кампаний</span></div>
+            <div class="stat"><strong>11 hrs</strong><span>экономии в неделю</span></div>
+          </div>
+          <div class="palette">
+            <div class="swatch"><div class="swatch-color" style="--swatch:#1f1d32"></div><div class="swatch-label">Night Plum<br>#1F1D32</div></div>
+            <div class="swatch"><div class="swatch-color" style="--swatch:#4d2549"></div><div class="swatch-label">Merlot Glow<br>#4D2549</div></div>
+            <div class="swatch"><div class="swatch-color" style="--swatch:#ff8d5b"></div><div class="swatch-label">Coral CTA<br>#FF8D5B</div></div>
+            <div class="swatch"><div class="swatch-color" style="--swatch:#d4bdd1"></div><div class="swatch-label">Soft Lilac<br>#D4BDD1</div></div>
+            <div class="swatch"><div class="swatch-color" style="--swatch:#fff4fb"></div><div class="swatch-label">Powder Light<br>#FFF4FB</div></div>
+          </div>
+          <div class="footnote">
+            <span>Подходит, когда лендинг должен выглядеть смелее обычного SaaS.</span>
+            <span>Особенно сильна в паре с крупной типографикой и короткими месседжами.</span>
+          </div>
+        </div>
+      </article>
+    </section>
+  </main>
+</body>
+</html>

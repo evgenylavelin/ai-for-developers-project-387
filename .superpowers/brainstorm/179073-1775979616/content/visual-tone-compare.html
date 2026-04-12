@@ -1,0 +1,148 @@
+<h2>Какой визуальный тон ближе?</h2>
+<p class="subtitle">Структура визарда одинаковая во всех трёх примерах. Меняется только характер подачи.</p>
+
+<div class="cards">
+  <div class="card" data-choice="utility" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mockup">
+        <div class="mockup-header">A. Совсем утилитарный</div>
+        <div class="mockup-body" style="padding:20px;background:#f5f8f2;">
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:18px;">
+            <div style="padding:10px;border-radius:10px;background:#edf3eb;border:1px solid #d9e2d5;">
+              <div style="font-size:11px;color:#667562;">1</div>
+              <div style="font-size:12px;font-weight:700;color:#182117;">Тип встречи</div>
+            </div>
+            <div style="padding:10px;border-radius:10px;background:#e1efe2;border:1px solid #7fb287;">
+              <div style="font-size:11px;color:#2f7d3e;">2</div>
+              <div style="font-size:12px;font-weight:700;color:#182117;">Дата и время</div>
+            </div>
+            <div style="padding:10px;border-radius:10px;background:#edf3eb;border:1px solid #d9e2d5;">
+              <div style="font-size:11px;color:#7b8977;">3</div>
+              <div style="font-size:12px;font-weight:700;color:#667562;">Контакты</div>
+            </div>
+          </div>
+          <div style="font-size:22px;font-weight:700;color:#182117;margin-bottom:8px;">Выберите дату и время</div>
+          <div style="font-size:13px;color:#667562;margin-bottom:16px;">Нейтральный, рабочий, почти без эмоции.</div>
+          <div style="padding:14px;border-radius:12px;background:#fff;border:1px solid #d9e2d5;margin-bottom:10px;">
+            <div style="font-size:12px;color:#667562;margin-bottom:8px;">Апрель 2026</div>
+            <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;">
+              <div style="padding:8px;border-radius:8px;background:#f3f6f1;">14</div>
+              <div style="padding:8px;border-radius:8px;background:#e1efe2;border:1px solid #7fb287;">15</div>
+              <div style="padding:8px;border-radius:8px;background:#f3f6f1;">16</div>
+              <div style="padding:8px;border-radius:8px;background:#f3f6f1;">17</div>
+              <div style="padding:8px;border-radius:8px;background:#f3f6f1;">18</div>
+              <div style="padding:8px;border-radius:8px;background:#f3f6f1;">19</div>
+              <div style="padding:8px;border-radius:8px;background:#f3f6f1;">20</div>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">
+            <div style="padding:10px;border-radius:8px;background:#fff;border:1px solid #d9e2d5;">09:00</div>
+            <div style="padding:10px;border-radius:8px;background:#e1efe2;border:1px solid #7fb287;">10:30</div>
+            <div style="padding:10px;border-radius:8px;background:#fff;border:1px solid #d9e2d5;">13:00</div>
+            <div style="padding:10px;border-radius:8px;background:#fff;border:1px solid #d9e2d5;">16:30</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Совсем утилитарный</h3>
+      <p>Максимум простоты и функциональности. Риск: интерфейс может выглядеть слишком сухо.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="soft" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mockup">
+        <div class="mockup-header">B. Мягкий и дружелюбный</div>
+        <div class="mockup-body" style="padding:20px;background:linear-gradient(180deg,#f2ffd9 0%,#eef8e8 100%);">
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px;">
+            <div style="padding:11px 12px;border-radius:14px;background:rgba(255,255,255,0.7);border:1px solid rgba(21,33,20,0.08);box-shadow:0 8px 20px rgba(47,154,72,0.06);">
+              <div style="font-size:11px;color:#4f654d;">1</div>
+              <div style="font-size:12px;font-weight:700;color:#152114;">Тип встречи</div>
+            </div>
+            <div style="padding:11px 12px;border-radius:14px;background:#d9f1dd;border:1px solid #2f9a48;box-shadow:0 10px 22px rgba(47,154,72,0.12);">
+              <div style="font-size:11px;color:#2f9a48;">2</div>
+              <div style="font-size:12px;font-weight:700;color:#152114;">Дата и время</div>
+            </div>
+            <div style="padding:11px 12px;border-radius:14px;background:rgba(255,255,255,0.58);border:1px solid rgba(21,33,20,0.08);">
+              <div style="font-size:11px;color:#4f654d;">3</div>
+              <div style="font-size:12px;font-weight:700;color:#4f654d;">Контакты</div>
+            </div>
+          </div>
+          <div style="font-size:24px;font-weight:700;color:#152114;margin-bottom:8px;">Выберите дату и время</div>
+          <div style="font-size:14px;color:#4f654d;margin-bottom:16px;">Спокойный минимализм с чуть более тёплой подачей и мягкими поверхностями.</div>
+          <div style="padding:14px;border-radius:16px;background:rgba(249,255,244,0.72);border:1px solid rgba(21,33,20,0.08);box-shadow:0 14px 28px rgba(47,154,72,0.08);margin-bottom:10px;">
+            <div style="font-size:12px;color:#4f654d;margin-bottom:8px;">Апрель 2026</div>
+            <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;">
+              <div style="padding:8px;border-radius:10px;background:#eef5ea;">14</div>
+              <div style="padding:8px;border-radius:10px;background:#d9f1dd;border:1px solid #2f9a48;">15</div>
+              <div style="padding:8px;border-radius:10px;background:#eef5ea;">16</div>
+              <div style="padding:8px;border-radius:10px;background:#eef5ea;">17</div>
+              <div style="padding:8px;border-radius:10px;background:#eef5ea;">18</div>
+              <div style="padding:8px;border-radius:10px;background:#eef5ea;">19</div>
+              <div style="padding:8px;border-radius:10px;background:#eef5ea;">20</div>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">
+            <div style="padding:10px;border-radius:10px;background:rgba(255,255,255,0.82);border:1px solid rgba(21,33,20,0.08);">09:00</div>
+            <div style="padding:10px;border-radius:10px;background:#d9f1dd;border:1px solid #2f9a48;">10:30</div>
+            <div style="padding:10px;border-radius:10px;background:rgba(255,255,255,0.82);border:1px solid rgba(21,33,20,0.08);">13:00</div>
+            <div style="padding:10px;border-radius:10px;background:rgba(255,255,255,0.82);border:1px solid rgba(21,33,20,0.08);">16:30</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Мягкий и дружелюбный</h3>
+      <p>Ощущается легче и приятнее, но не теряет утилитарность и ясность.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="premium" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mockup">
+        <div class="mockup-header">C. Премиально-аккуратный</div>
+        <div class="mockup-body" style="padding:24px;background:linear-gradient(180deg,#f2ffd9 0%,#f7fbf3 100%);">
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:22px;">
+            <div style="padding:12px 14px;border-radius:16px;background:rgba(255,255,255,0.7);border:1px solid rgba(21,33,20,0.07);">
+              <div style="font-size:10px;letter-spacing:0.08em;color:#4f654d;">STEP 1</div>
+              <div style="font-size:13px;font-weight:700;color:#152114;">Тип встречи</div>
+            </div>
+            <div style="padding:12px 14px;border-radius:16px;background:#d9f1dd;border:1px solid #2f9a48;box-shadow:0 14px 30px rgba(47,154,72,0.10);">
+              <div style="font-size:10px;letter-spacing:0.08em;color:#2f9a48;">STEP 2</div>
+              <div style="font-size:13px;font-weight:700;color:#152114;">Дата и время</div>
+            </div>
+            <div style="padding:12px 14px;border-radius:16px;background:rgba(255,255,255,0.58);border:1px solid rgba(21,33,20,0.07);">
+              <div style="font-size:10px;letter-spacing:0.08em;color:#4f654d;">STEP 3</div>
+              <div style="font-size:13px;font-weight:700;color:#4f654d;">Контакты</div>
+            </div>
+          </div>
+          <div style="font-size:28px;font-weight:700;line-height:1.05;color:#152114;margin-bottom:10px;">Выберите дату<br>и время</div>
+          <div style="font-size:14px;color:#4f654d;margin-bottom:18px;">Больше воздуха, крупнее типографика и чуть выразительнее композиция.</div>
+          <div style="padding:16px;border-radius:18px;background:rgba(249,255,244,0.8);border:1px solid rgba(21,33,20,0.08);box-shadow:0 18px 36px rgba(47,154,72,0.08);margin-bottom:12px;">
+            <div style="font-size:12px;color:#4f654d;margin-bottom:10px;">Апрель 2026</div>
+            <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:7px;">
+              <div style="padding:9px;border-radius:12px;background:#eef5ea;">14</div>
+              <div style="padding:9px;border-radius:12px;background:#d9f1dd;border:1px solid #2f9a48;">15</div>
+              <div style="padding:9px;border-radius:12px;background:#eef5ea;">16</div>
+              <div style="padding:9px;border-radius:12px;background:#eef5ea;">17</div>
+              <div style="padding:9px;border-radius:12px;background:#eef5ea;">18</div>
+              <div style="padding:9px;border-radius:12px;background:#eef5ea;">19</div>
+              <div style="padding:9px;border-radius:12px;background:#eef5ea;">20</div>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:9px;">
+            <div style="padding:11px;border-radius:12px;background:rgba(255,255,255,0.82);border:1px solid rgba(21,33,20,0.08);">09:00</div>
+            <div style="padding:11px;border-radius:12px;background:#d9f1dd;border:1px solid #2f9a48;">10:30</div>
+            <div style="padding:11px;border-radius:12px;background:rgba(255,255,255,0.82);border:1px solid rgba(21,33,20,0.08);">13:00</div>
+            <div style="padding:11px;border-radius:12px;background:rgba(255,255,255,0.82);border:1px solid rgba(21,33,20,0.08);">16:30</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Премиально-аккуратный</h3>
+      <p>Выглядит выразительнее, но для очень простого продукта уже ближе к характерному дизайну, чем к нейтральному.</p>
+    </div>
+  </div>
+</div>

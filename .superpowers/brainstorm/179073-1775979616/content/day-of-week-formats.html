@@ -1,0 +1,148 @@
+<h2>Как показывать день недели?</h2>
+<p class="subtitle">Все примеры остаются в утилитарном стиле и в формате вертикального стека. Меняется только подача даты.</p>
+
+<div class="cards">
+  <div class="card" data-choice="short-inline" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mockup">
+        <div class="mockup-header">A. Коротко в самой дате</div>
+        <div class="mockup-body" style="padding:20px;background:#f5f8f2;">
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:18px;">
+            <div style="padding:10px;border-radius:10px;background:#edf3eb;border:1px solid #d9e2d5;">
+              <div style="font-size:11px;color:#667562;">1</div>
+              <div style="font-size:12px;font-weight:700;color:#182117;">Тип встречи</div>
+            </div>
+            <div style="padding:10px;border-radius:10px;background:#e1efe2;border:1px solid #7fb287;">
+              <div style="font-size:11px;color:#2f7d3e;">2</div>
+              <div style="font-size:12px;font-weight:700;color:#182117;">Дата и время</div>
+            </div>
+            <div style="padding:10px;border-radius:10px;background:#edf3eb;border:1px solid #d9e2d5;">
+              <div style="font-size:11px;color:#7b8977;">3</div>
+              <div style="font-size:12px;font-weight:700;color:#667562;">Контакты</div>
+            </div>
+          </div>
+          <div style="font-size:22px;font-weight:700;color:#182117;margin-bottom:8px;">Выберите дату и время</div>
+          <div style="font-size:13px;color:#667562;margin-bottom:16px;">День недели встроен в подпись даты: компактно, но в календарной сетке читается не сразу.</div>
+          <div style="padding:14px;border-radius:12px;background:#fff;border:1px solid #d9e2d5;margin-bottom:10px;">
+            <div style="font-size:12px;color:#667562;margin-bottom:8px;">Апрель 2026</div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
+              <div style="padding:10px;border-radius:8px;background:#f3f6f1;border:1px solid #e0e8dc;">Вт, 14 апр</div>
+              <div style="padding:10px;border-radius:8px;background:#e1efe2;border:1px solid #7fb287;">Ср, 15 апр</div>
+              <div style="padding:10px;border-radius:8px;background:#f3f6f1;border:1px solid #e0e8dc;">Чт, 16 апр</div>
+            </div>
+          </div>
+          <div style="font-size:13px;color:#667562;margin-bottom:8px;">Среда, 15 апреля</div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">
+            <div style="padding:10px;border-radius:8px;background:#fff;border:1px solid #d9e2d5;">09:00</div>
+            <div style="padding:10px;border-radius:8px;background:#e1efe2;border:1px solid #7fb287;">10:30</div>
+            <div style="padding:10px;border-radius:8px;background:#fff;border:1px solid #d9e2d5;">13:00</div>
+            <div style="padding:10px;border-radius:8px;background:#fff;border:1px solid #d9e2d5;">16:30</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>`Пн, 15 апр`</h3>
+      <p>Компактно и самодостаточно, но карточки с датами становятся длиннее.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="full-inline" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mockup">
+        <div class="mockup-header">B. Полный день недели в дате</div>
+        <div class="mockup-body" style="padding:20px;background:#f5f8f2;">
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:18px;">
+            <div style="padding:10px;border-radius:10px;background:#edf3eb;border:1px solid #d9e2d5;">
+              <div style="font-size:11px;color:#667562;">1</div>
+              <div style="font-size:12px;font-weight:700;color:#182117;">Тип встречи</div>
+            </div>
+            <div style="padding:10px;border-radius:10px;background:#e1efe2;border:1px solid #7fb287;">
+              <div style="font-size:11px;color:#2f7d3e;">2</div>
+              <div style="font-size:12px;font-weight:700;color:#182117;">Дата и время</div>
+            </div>
+            <div style="padding:10px;border-radius:10px;background:#edf3eb;border:1px solid #d9e2d5;">
+              <div style="font-size:11px;color:#7b8977;">3</div>
+              <div style="font-size:12px;font-weight:700;color:#667562;">Контакты</div>
+            </div>
+          </div>
+          <div style="font-size:22px;font-weight:700;color:#182117;margin-bottom:8px;">Выберите дату и время</div>
+          <div style="font-size:13px;color:#667562;margin-bottom:16px;">Максимально понятно по смыслу, но дата начинает занимать слишком много места для утилитарного интерфейса.</div>
+          <div style="padding:14px;border-radius:12px;background:#fff;border:1px solid #d9e2d5;margin-bottom:10px;">
+            <div style="font-size:12px;color:#667562;margin-bottom:8px;">Апрель 2026</div>
+            <div style="display:grid;gap:8px;">
+              <div style="padding:10px;border-radius:8px;background:#f3f6f1;border:1px solid #e0e8dc;">Вторник, 14 апреля</div>
+              <div style="padding:10px;border-radius:8px;background:#e1efe2;border:1px solid #7fb287;">Среда, 15 апреля</div>
+              <div style="padding:10px;border-radius:8px;background:#f3f6f1;border:1px solid #e0e8dc;">Четверг, 16 апреля</div>
+            </div>
+          </div>
+          <div style="font-size:13px;color:#667562;margin-bottom:8px;">Среда, 15 апреля</div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">
+            <div style="padding:10px;border-radius:8px;background:#fff;border:1px solid #d9e2d5;">09:00</div>
+            <div style="padding:10px;border-radius:8px;background:#e1efe2;border:1px solid #7fb287;">10:30</div>
+            <div style="padding:10px;border-radius:8px;background:#fff;border:1px solid #d9e2d5;">13:00</div>
+            <div style="padding:10px;border-radius:8px;background:#fff;border:1px solid #d9e2d5;">16:30</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>`Понедельник, 15 апреля`</h3>
+      <p>Самый явный вариант, но быстро перегружает сетку и ритм экрана.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="hybrid" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mockup">
+        <div class="mockup-header">C. Кратко в календаре, полно над слотами</div>
+        <div class="mockup-body" style="padding:20px;background:#f5f8f2;">
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:18px;">
+            <div style="padding:10px;border-radius:10px;background:#edf3eb;border:1px solid #d9e2d5;">
+              <div style="font-size:11px;color:#667562;">1</div>
+              <div style="font-size:12px;font-weight:700;color:#182117;">Тип встречи</div>
+            </div>
+            <div style="padding:10px;border-radius:10px;background:#e1efe2;border:1px solid #7fb287;">
+              <div style="font-size:11px;color:#2f7d3e;">2</div>
+              <div style="font-size:12px;font-weight:700;color:#182117;">Дата и время</div>
+            </div>
+            <div style="padding:10px;border-radius:10px;background:#edf3eb;border:1px solid #d9e2d5;">
+              <div style="font-size:11px;color:#7b8977;">3</div>
+              <div style="font-size:12px;font-weight:700;color:#667562;">Контакты</div>
+            </div>
+          </div>
+          <div style="font-size:22px;font-weight:700;color:#182117;margin-bottom:8px;">Выберите дату и время</div>
+          <div style="font-size:13px;color:#667562;margin-bottom:16px;">В календаре день недели сокращён, а над слотами показывается полная дата. Самый рабочий компромисс.</div>
+          <div style="padding:14px;border-radius:12px;background:#fff;border:1px solid #d9e2d5;margin-bottom:10px;">
+            <div style="font-size:12px;color:#667562;margin-bottom:8px;">Апрель 2026</div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
+              <div style="padding:10px;border-radius:8px;background:#f3f6f1;border:1px solid #e0e8dc;">
+                <div style="font-size:11px;color:#7b8977;">Вт</div>
+                <div style="font-size:14px;color:#182117;">14</div>
+              </div>
+              <div style="padding:10px;border-radius:8px;background:#e1efe2;border:1px solid #7fb287;">
+                <div style="font-size:11px;color:#2f7d3e;">Ср</div>
+                <div style="font-size:14px;color:#182117;">15</div>
+              </div>
+              <div style="padding:10px;border-radius:8px;background:#f3f6f1;border:1px solid #e0e8dc;">
+                <div style="font-size:11px;color:#7b8977;">Чт</div>
+                <div style="font-size:14px;color:#182117;">16</div>
+              </div>
+            </div>
+          </div>
+          <div style="font-size:13px;color:#667562;margin-bottom:8px;">Среда, 15 апреля</div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">
+            <div style="padding:10px;border-radius:8px;background:#fff;border:1px solid #d9e2d5;">09:00</div>
+            <div style="padding:10px;border-radius:8px;background:#e1efe2;border:1px solid #7fb287;">10:30</div>
+            <div style="padding:10px;border-radius:8px;background:#fff;border:1px solid #d9e2d5;">13:00</div>
+            <div style="padding:10px;border-radius:8px;background:#fff;border:1px solid #d9e2d5;">16:30</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Гибридный вариант</h3>
+      <p>Календарь остаётся компактным, а в момент выбора времени пользователь всё равно видит полный день недели.</p>
+    </div>
+  </div>
+</div>

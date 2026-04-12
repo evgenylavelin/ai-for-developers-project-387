@@ -1,0 +1,154 @@
+<h2>Как организовать шаг "Дата и время"?</h2>
+<p class="subtitle">Все варианты остаются в стиле линейного визарда на 3 шага. Меняется только внутренняя компоновка выбора слота.</p>
+
+<div class="cards">
+  <div class="card" data-choice="stacked" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mockup">
+        <div class="mockup-header">A. Вертикальный стек</div>
+        <div class="mockup-body" style="padding:20px;background:#f7fbf3;">
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px;">
+            <div style="padding:10px 12px;border-radius:14px;background:#e6f5e5;border:1px solid #a9d2ad;">
+              <div style="font-size:11px;color:#4f654d;">1</div>
+              <div style="font-size:12px;font-weight:700;color:#152114;">Тип встречи</div>
+            </div>
+            <div style="padding:10px 12px;border-radius:14px;background:#d9f1dd;border:1px solid #2f9a48;">
+              <div style="font-size:11px;color:#2f9a48;">2</div>
+              <div style="font-size:12px;font-weight:700;color:#152114;">Дата и время</div>
+            </div>
+            <div style="padding:10px 12px;border-radius:14px;background:#edf4ea;border:1px solid #d7e6d2;">
+              <div style="font-size:11px;color:#4f654d;">3</div>
+              <div style="font-size:12px;font-weight:700;color:#4f654d;">Контакты</div>
+            </div>
+          </div>
+          <div style="font-size:24px;font-weight:700;color:#152114;margin-bottom:8px;">Выберите дату и время</div>
+          <div style="font-size:14px;color:#4f654d;margin-bottom:16px;">Сначала календарь, потом свободные слоты ниже. Самый прямолинейный сценарий.</div>
+          <div style="padding:14px;border-radius:14px;background:#fff;border:1px solid #c7dbc2;margin-bottom:12px;">
+            <div style="font-size:13px;color:#4f654d;margin-bottom:8px;">Апрель 2026</div>
+            <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;">
+              <div style="padding:8px;border-radius:10px;background:#eef5ea;">14</div>
+              <div style="padding:8px;border-radius:10px;background:#d9f1dd;border:1px solid #2f9a48;">15</div>
+              <div style="padding:8px;border-radius:10px;background:#eef5ea;">16</div>
+              <div style="padding:8px;border-radius:10px;background:#eef5ea;">17</div>
+              <div style="padding:8px;border-radius:10px;background:#eef5ea;">18</div>
+              <div style="padding:8px;border-radius:10px;background:#eef5ea;">19</div>
+              <div style="padding:8px;border-radius:10px;background:#eef5ea;">20</div>
+            </div>
+          </div>
+          <div style="font-size:13px;color:#4f654d;margin-bottom:8px;">Пятница, 15 апреля</div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">
+            <div style="padding:10px;border-radius:10px;background:#fff;border:1px solid #c7dbc2;">09:00</div>
+            <div style="padding:10px;border-radius:10px;background:#d9f1dd;border:1px solid #2f9a48;">10:30</div>
+            <div style="padding:10px;border-radius:10px;background:#fff;border:1px solid #c7dbc2;">13:00</div>
+            <div style="padding:10px;border-radius:10px;background:#fff;border:1px solid #c7dbc2;">16:30</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Вертикальный стек</h3>
+      <p>Самый простой паттерн. Хорошо работает на мобильном и не требует привыкания.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="split" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mockup">
+        <div class="mockup-header">B. Календарь слева, время справа</div>
+        <div class="mockup-body" style="padding:20px;background:#f7fbf3;">
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px;">
+            <div style="padding:10px 12px;border-radius:14px;background:#e6f5e5;border:1px solid #a9d2ad;">
+              <div style="font-size:11px;color:#4f654d;">1</div>
+              <div style="font-size:12px;font-weight:700;color:#152114;">Тип встречи</div>
+            </div>
+            <div style="padding:10px 12px;border-radius:14px;background:#d9f1dd;border:1px solid #2f9a48;">
+              <div style="font-size:11px;color:#2f9a48;">2</div>
+              <div style="font-size:12px;font-weight:700;color:#152114;">Дата и время</div>
+            </div>
+            <div style="padding:10px 12px;border-radius:14px;background:#edf4ea;border:1px solid #d7e6d2;">
+              <div style="font-size:11px;color:#4f654d;">3</div>
+              <div style="font-size:12px;font-weight:700;color:#4f654d;">Контакты</div>
+            </div>
+          </div>
+          <div style="font-size:24px;font-weight:700;color:#152114;margin-bottom:8px;">Выберите дату и время</div>
+          <div style="font-size:14px;color:#4f654d;margin-bottom:16px;">Быстрее на десктопе: дата и слоты видны одновременно.</div>
+          <div style="display:grid;grid-template-columns:1.1fr 0.9fr;gap:12px;">
+            <div style="padding:14px;border-radius:14px;background:#fff;border:1px solid #c7dbc2;">
+              <div style="font-size:13px;color:#4f654d;margin-bottom:8px;">Апрель 2026</div>
+              <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;">
+                <div style="padding:8px;border-radius:10px;background:#eef5ea;">14</div>
+                <div style="padding:8px;border-radius:10px;background:#d9f1dd;border:1px solid #2f9a48;">15</div>
+                <div style="padding:8px;border-radius:10px;background:#eef5ea;">16</div>
+                <div style="padding:8px;border-radius:10px;background:#eef5ea;">17</div>
+                <div style="padding:8px;border-radius:10px;background:#eef5ea;">18</div>
+                <div style="padding:8px;border-radius:10px;background:#eef5ea;">19</div>
+                <div style="padding:8px;border-radius:10px;background:#eef5ea;">20</div>
+              </div>
+            </div>
+            <div style="padding:14px;border-radius:14px;background:#fff;border:1px solid #c7dbc2;">
+              <div style="font-size:13px;color:#4f654d;margin-bottom:8px;">15 апреля</div>
+              <div style="display:grid;gap:8px;">
+                <div style="padding:10px;border-radius:10px;background:#fff;border:1px solid #c7dbc2;">09:00</div>
+                <div style="padding:10px;border-radius:10px;background:#d9f1dd;border:1px solid #2f9a48;">10:30</div>
+                <div style="padding:10px;border-radius:10px;background:#fff;border:1px solid #c7dbc2;">13:00</div>
+                <div style="padding:10px;border-radius:10px;background:#fff;border:1px solid #c7dbc2;">16:30</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Split layout</h3>
+      <p>Самый быстрый выбор на широком экране, но интерфейс становится чуть плотнее.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="date-first" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mockup">
+        <div class="mockup-header">C. Сначала дата, потом слоты</div>
+        <div class="mockup-body" style="padding:20px;background:#f7fbf3;">
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px;">
+            <div style="padding:10px 12px;border-radius:14px;background:#e6f5e5;border:1px solid #a9d2ad;">
+              <div style="font-size:11px;color:#4f654d;">1</div>
+              <div style="font-size:12px;font-weight:700;color:#152114;">Тип встречи</div>
+            </div>
+            <div style="padding:10px 12px;border-radius:14px;background:#d9f1dd;border:1px solid #2f9a48;">
+              <div style="font-size:11px;color:#2f9a48;">2</div>
+              <div style="font-size:12px;font-weight:700;color:#152114;">Дата и время</div>
+            </div>
+            <div style="padding:10px 12px;border-radius:14px;background:#edf4ea;border:1px solid #d7e6d2;">
+              <div style="font-size:11px;color:#4f654d;">3</div>
+              <div style="font-size:12px;font-weight:700;color:#4f654d;">Контакты</div>
+            </div>
+          </div>
+          <div style="font-size:24px;font-weight:700;color:#152114;margin-bottom:8px;">Выберите дату и время</div>
+          <div style="font-size:14px;color:#4f654d;margin-bottom:16px;">Экран раскрывается по мере выбора: сначала дата, потом ниже появляется список слотов.</div>
+          <div style="padding:14px;border-radius:14px;background:#fff;border:1px solid #c7dbc2;margin-bottom:12px;">
+            <div style="font-size:13px;color:#4f654d;margin-bottom:8px;">Выберите день</div>
+            <div style="display:flex;gap:8px;overflow:hidden;">
+              <div style="padding:10px 12px;border-radius:12px;background:#fff;border:1px solid #c7dbc2;">14 апр</div>
+              <div style="padding:10px 12px;border-radius:12px;background:#d9f1dd;border:1px solid #2f9a48;">15 апр</div>
+              <div style="padding:10px 12px;border-radius:12px;background:#fff;border:1px solid #c7dbc2;">16 апр</div>
+              <div style="padding:10px 12px;border-radius:12px;background:#fff;border:1px solid #c7dbc2;">17 апр</div>
+            </div>
+          </div>
+          <div style="padding:14px;border-radius:14px;background:#eef9ef;border:1px solid #b8dbbc;">
+            <div style="font-size:13px;color:#4f654d;margin-bottom:8px;">Свободное время на 15 апреля</div>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">
+              <div style="padding:10px;border-radius:10px;background:#fff;border:1px solid #c7dbc2;">09:00</div>
+              <div style="padding:10px;border-radius:10px;background:#d9f1dd;border:1px solid #2f9a48;">10:30</div>
+              <div style="padding:10px;border-radius:10px;background:#fff;border:1px solid #c7dbc2;">13:00</div>
+              <div style="padding:10px;border-radius:10px;background:#fff;border:1px solid #c7dbc2;">16:30</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Дата сначала</h3>
+      <p>Ещё проще по ощущению, но слабее для календарного сценария на 14 дней вперёд.</p>
+    </div>
+  </div>
+</div>

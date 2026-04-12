@@ -5,7 +5,10 @@
   "private": true,
   "scripts": {
     "spec:compile": "tsp compile spec",
-    "spec:format": "tsp format \"spec/**/*.tsp\""
+    "spec:format": "tsp format \"spec/**/*.tsp\"",
+    "frontend:dev": "npm --prefix apps/frontend run dev",
+    "frontend:build": "npm --prefix apps/frontend run build",
+    "frontend:test": "npm --prefix apps/frontend run test --"
   },
   "dependencies": {
     "@typespec/compiler": "latest",

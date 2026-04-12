@@ -1,0 +1,137 @@
+<h2>Как показывать прогресс в визарде?</h2>
+<p class="subtitle">Один и тот же экран шага, меняется только верхний блок прогресса.</p>
+
+<div class="cards">
+  <div class="card" data-choice="bar-counter" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mockup">
+        <div class="mockup-header">A. Полоса + "Шаг 2 из 3"</div>
+        <div class="mockup-body" style="padding:20px;background:#f7fbf3;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
+            <div style="font-size:12px;color:#4f654d;">Шаг 2 из 3</div>
+            <div style="width:128px;height:6px;border-radius:999px;background:#d9e9d2;overflow:hidden;">
+              <div style="width:66%;height:100%;background:#2f9a48;"></div>
+            </div>
+          </div>
+          <div style="font-size:24px;font-weight:700;color:#152114;margin-bottom:8px;">Выберите дату и время</div>
+          <div style="font-size:14px;color:#4f654d;margin-bottom:16px;">Максимально спокойный вариант: прогресс есть, но он не привлекает к себе внимание.</div>
+          <div style="padding:14px;border-radius:14px;background:#fff;border:1px solid #c7dbc2;margin-bottom:10px;">
+            <div style="font-size:13px;color:#4f654d;margin-bottom:8px;">Апрель 2026</div>
+            <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;">
+              <div style="padding:8px;border-radius:10px;background:#eef5ea;">14</div>
+              <div style="padding:8px;border-radius:10px;background:#d9f1dd;border:1px solid #2f9a48;">15</div>
+              <div style="padding:8px;border-radius:10px;background:#eef5ea;">16</div>
+              <div style="padding:8px;border-radius:10px;background:#eef5ea;">17</div>
+              <div style="padding:8px;border-radius:10px;background:#eef5ea;">18</div>
+              <div style="padding:8px;border-radius:10px;background:#eef5ea;">19</div>
+              <div style="padding:8px;border-radius:10px;background:#eef5ea;">20</div>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
+            <div style="padding:10px;border-radius:10px;background:#fff;border:1px solid #c7dbc2;">09:00</div>
+            <div style="padding:10px;border-radius:10px;background:#d9f1dd;border:1px solid #2f9a48;">10:30</div>
+            <div style="padding:10px;border-radius:10px;background:#fff;border:1px solid #c7dbc2;">13:00</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Полоса + счётчик</h3>
+      <p>Самый минимальный паттерн. Хорошо подходит, если приоритетом остаётся полное визуальное спокойствие.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="segments" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mockup">
+        <div class="mockup-header">B. 3 сегмента с подписями</div>
+        <div class="mockup-body" style="padding:20px;background:#f7fbf3;">
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px;">
+            <div style="padding:10px 12px;border-radius:14px;background:#e6f5e5;border:1px solid #a9d2ad;">
+              <div style="font-size:11px;color:#4f654d;">1</div>
+              <div style="font-size:12px;font-weight:700;color:#152114;">Тип встречи</div>
+            </div>
+            <div style="padding:10px 12px;border-radius:14px;background:#d9f1dd;border:1px solid #2f9a48;">
+              <div style="font-size:11px;color:#2f9a48;">2</div>
+              <div style="font-size:12px;font-weight:700;color:#152114;">Дата и время</div>
+            </div>
+            <div style="padding:10px 12px;border-radius:14px;background:#edf4ea;border:1px solid #d7e6d2;">
+              <div style="font-size:11px;color:#4f654d;">3</div>
+              <div style="font-size:12px;font-weight:700;color:#4f654d;">Контакты</div>
+            </div>
+          </div>
+          <div style="font-size:24px;font-weight:700;color:#152114;margin-bottom:8px;">Выберите дату и время</div>
+          <div style="font-size:14px;color:#4f654d;margin-bottom:16px;">Пользователь сразу понимает всю структуру, но верхняя зона уже заметнее.</div>
+          <div style="padding:14px;border-radius:14px;background:#fff;border:1px solid #c7dbc2;margin-bottom:10px;">
+            <div style="font-size:13px;color:#4f654d;margin-bottom:8px;">Апрель 2026</div>
+            <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;">
+              <div style="padding:8px;border-radius:10px;background:#eef5ea;">14</div>
+              <div style="padding:8px;border-radius:10px;background:#d9f1dd;border:1px solid #2f9a48;">15</div>
+              <div style="padding:8px;border-radius:10px;background:#eef5ea;">16</div>
+              <div style="padding:8px;border-radius:10px;background:#eef5ea;">17</div>
+              <div style="padding:8px;border-radius:10px;background:#eef5ea;">18</div>
+              <div style="padding:8px;border-radius:10px;background:#eef5ea;">19</div>
+              <div style="padding:8px;border-radius:10px;background:#eef5ea;">20</div>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
+            <div style="padding:10px;border-radius:10px;background:#fff;border:1px solid #c7dbc2;">09:00</div>
+            <div style="padding:10px;border-radius:10px;background:#d9f1dd;border:1px solid #2f9a48;">10:30</div>
+            <div style="padding:10px;border-radius:10px;background:#fff;border:1px solid #c7dbc2;">13:00</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Сегменты с подписями</h3>
+      <p>Оптимальный баланс между простотой и понятной структурой всего пути.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="step-list" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mockup">
+        <div class="mockup-header">C. Короткий список шагов</div>
+        <div class="mockup-body" style="padding:20px;background:#f7fbf3;">
+          <div style="padding:14px 16px;border-radius:16px;background:#edf6ea;border:1px solid #d7e6d2;margin-bottom:18px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <div style="font-size:13px;font-weight:700;color:#152114;">1. Тип встречи</div>
+              <div style="color:#2f9a48;">✓</div>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;">
+              <div style="font-size:13px;font-weight:700;color:#152114;">2. Дата и время</div>
+              <div style="width:10px;height:10px;border-radius:999px;background:#2f9a48;"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;">
+              <div style="font-size:13px;color:#4f654d;">3. Контакты и подтверждение</div>
+              <div style="width:10px;height:10px;border-radius:999px;background:#d7e6d2;"></div>
+            </div>
+          </div>
+          <div style="font-size:24px;font-weight:700;color:#152114;margin-bottom:8px;">Выберите дату и время</div>
+          <div style="font-size:14px;color:#4f654d;margin-bottom:16px;">Понятнее всего читается путь, но верхняя часть становится самой тяжёлой.</div>
+          <div style="padding:14px;border-radius:14px;background:#fff;border:1px solid #c7dbc2;margin-bottom:10px;">
+            <div style="font-size:13px;color:#4f654d;margin-bottom:8px;">Апрель 2026</div>
+            <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;">
+              <div style="padding:8px;border-radius:10px;background:#eef5ea;">14</div>
+              <div style="padding:8px;border-radius:10px;background:#d9f1dd;border:1px solid #2f9a48;">15</div>
+              <div style="padding:8px;border-radius:10px;background:#eef5ea;">16</div>
+              <div style="padding:8px;border-radius:10px;background:#eef5ea;">17</div>
+              <div style="padding:8px;border-radius:10px;background:#eef5ea;">18</div>
+              <div style="padding:8px;border-radius:10px;background:#eef5ea;">19</div>
+              <div style="padding:8px;border-radius:10px;background:#eef5ea;">20</div>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
+            <div style="padding:10px;border-radius:10px;background:#fff;border:1px solid #c7dbc2;">09:00</div>
+            <div style="padding:10px;border-radius:10px;background:#d9f1dd;border:1px solid #2f9a48;">10:30</div>
+            <div style="padding:10px;border-radius:10px;background:#fff;border:1px solid #c7dbc2;">13:00</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Список шагов</h3>
+      <p>Самый объясняющий вариант, но для минимального интерфейса может быть уже избыточным.</p>
+    </div>
+  </div>
+</div>
