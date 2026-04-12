@@ -13,6 +13,8 @@ type PublicBookingsHomeProps = {
   eventTypes: EventType[];
   schedule: ScheduleDay[];
   initialSelectedDate?: string;
+  workspace: "public" | "owner";
+  onChangeWorkspace: (workspace: "public" | "owner") => void;
   onCancelBooking: (bookingId: string) => void;
   onStartBooking: (isoDate: string) => void;
 };
@@ -26,6 +28,8 @@ export function PublicBookingsHome({
   eventTypes,
   schedule,
   initialSelectedDate,
+  workspace,
+  onChangeWorkspace,
   onCancelBooking,
   onStartBooking,
 }: PublicBookingsHomeProps) {
@@ -63,13 +67,34 @@ export function PublicBookingsHome({
   return (
     <section className="bookings-home">
       <div className="bookings-home__hero">
-        <div>
-          <p className="eyebrow">Call Planner</p>
-          <h1>Бронирования</h1>
-          <p className="panel-copy bookings-home__copy">
-            Публичный календарь всех встреч на ближайшие 14 дней. В этой учебной версии
-            детали встреч и отмена доступны без авторизации.
-          </p>
+        <div className="hero-header">
+          <div>
+            <p className="eyebrow">Call Planner</p>
+            <h1>Бронирования</h1>
+            <p className="panel-copy bookings-home__copy">
+              Публичный календарь всех встреч на ближайшие 14 дней. В этой учебной версии
+              детали встреч и отмена доступны без авторизации.
+            </p>
+          </div>
+
+          <nav className="workspace-nav workspace-nav--embedded" aria-label="Разделы приложения">
+            <button
+              type="button"
+              className={`workspace-nav__link${workspace === "public" ? " workspace-nav__link--active" : ""}`}
+              aria-pressed={workspace === "public"}
+              onClick={() => onChangeWorkspace("public")}
+            >
+              Бронирования
+            </button>
+            <button
+              type="button"
+              className={`workspace-nav__link${workspace === "owner" ? " workspace-nav__link--active" : ""}`}
+              aria-pressed={workspace === "owner"}
+              onClick={() => onChangeWorkspace("owner")}
+            >
+              Типы событий
+            </button>
+          </nav>
         </div>
       </div>
 

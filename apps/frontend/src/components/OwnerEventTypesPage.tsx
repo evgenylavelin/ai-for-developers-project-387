@@ -12,6 +12,8 @@ import type { OwnerEventType, OwnerEventTypeForm } from "../types";
 
 type OwnerEventTypesPageProps = {
   initialEventTypes: OwnerEventType[];
+  workspace: "public" | "owner";
+  onChangeWorkspace: (workspace: "public" | "owner") => void;
 };
 
 type PendingAction = "delete" | "archive" | null;
@@ -46,7 +48,11 @@ function getValidationErrorField(error: string): keyof OwnerEventTypeForm | null
   return null;
 }
 
-export function OwnerEventTypesPage({ initialEventTypes }: OwnerEventTypesPageProps) {
+export function OwnerEventTypesPage({
+  initialEventTypes,
+  workspace,
+  onChangeWorkspace,
+}: OwnerEventTypesPageProps) {
   const [eventTypes, setEventTypes] = useState(initialEventTypes);
   const [selectedEventTypeId, setSelectedEventTypeId] = useState<string | null>(
     initialEventTypes[0]?.id ?? null,
@@ -218,14 +224,36 @@ export function OwnerEventTypesPage({ initialEventTypes }: OwnerEventTypesPagePr
     <>
       <section className="owner-workspace">
         <header className="owner-hero">
-          <div>
-            <p className="eyebrow">Owner Workspace</p>
-            <h1>Управление типами событий</h1>
-            <p className="panel-copy owner-hero__copy">
-              Локальная административная зона для настройки карточек встреч. В этой версии CRUD
-              работает только в mock-состоянии внутри frontend-приложения.
-            </p>
+          <div className="hero-header">
+            <div>
+              <p className="eyebrow">Owner Workspace</p>
+              <h1>Управление типами событий</h1>
+              <p className="panel-copy owner-hero__copy">
+                Локальная административная зона для настройки карточек встреч. В этой версии CRUD
+                работает только в mock-состоянии внутри frontend-приложения.
+              </p>
+            </div>
+
+            <nav className="workspace-nav workspace-nav--embedded" aria-label="Разделы приложения">
+              <button
+                type="button"
+                className={`workspace-nav__link${workspace === "public" ? " workspace-nav__link--active" : ""}`}
+                aria-pressed={workspace === "public"}
+                onClick={() => onChangeWorkspace("public")}
+              >
+                Бронирования
+              </button>
+              <button
+                type="button"
+                className={`workspace-nav__link${workspace === "owner" ? " workspace-nav__link--active" : ""}`}
+                aria-pressed={workspace === "owner"}
+                onClick={() => onChangeWorkspace("owner")}
+              >
+                Типы событий
+              </button>
+            </nav>
           </div>
+
           <div className="owner-hero__meta">
             <span className="owner-kpi">
               <strong>{eventTypes.length}</strong>

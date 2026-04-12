@@ -91,28 +91,13 @@ export default function App({ scenario = "public" }: AppProps) {
     bookings,
   );
 
+  const handleWorkspaceChange = (nextWorkspace: "public" | "owner") => {
+    setWorkspace(nextWorkspace);
+  };
+
   return (
     <main className="app-shell app-shell--top">
       <div className="workspace-shell">
-        <nav className="workspace-nav" aria-label="Разделы приложения">
-          <button
-            type="button"
-            className={`workspace-nav__link${workspace === "public" ? " workspace-nav__link--active" : ""}`}
-            aria-pressed={workspace === "public"}
-            onClick={() => setWorkspace("public")}
-          >
-            Публичные бронирования
-          </button>
-          <button
-            type="button"
-            className={`workspace-nav__link${workspace === "owner" ? " workspace-nav__link--active" : ""}`}
-            aria-pressed={workspace === "owner"}
-            onClick={() => setWorkspace("owner")}
-          >
-            Управление типами событий
-          </button>
-        </nav>
-
         <div
           className={`workspace-content${workspace === "public" && screen === "booking" ? " workspace-content--centered" : ""}`}
         >
@@ -123,6 +108,8 @@ export default function App({ scenario = "public" }: AppProps) {
                 eventTypes={scenarioData.eventTypes}
                 initialSelectedDate={selectedHomeDate}
                 schedule={scenarioData.schedule}
+                workspace={workspace}
+                onChangeWorkspace={handleWorkspaceChange}
                 onCancelBooking={(bookingId) => {
                   setBookings((currentBookings) => cancelPublicBooking(currentBookings, bookingId));
                 }}
@@ -156,7 +143,12 @@ export default function App({ scenario = "public" }: AppProps) {
               />
             )
           ) : (
-            <OwnerEventTypesPage key={scenario} initialEventTypes={mockOwnerEventTypes} />
+            <OwnerEventTypesPage
+              key={scenario}
+              initialEventTypes={mockOwnerEventTypes}
+              workspace={workspace}
+              onChangeWorkspace={handleWorkspaceChange}
+            />
           )}
         </div>
       </div>
