@@ -1,11 +1,19 @@
 type SelectionSummaryProps = {
-  value?: string;
+  values: string[];
 };
 
-export function SelectionSummary({ value }: SelectionSummaryProps) {
-  if (!value) {
+export function SelectionSummary({ values }: SelectionSummaryProps) {
+  if (values.length === 0) {
     return null;
   }
 
-  return <p className="selection-summary">{value}</p>;
+  return (
+    <div className="selection-summary" aria-label="Результат предыдущих шагов">
+      {values.map((value) => (
+        <span key={value} className="selection-summary__chip">
+          {value}
+        </span>
+      ))}
+    </div>
+  );
 }

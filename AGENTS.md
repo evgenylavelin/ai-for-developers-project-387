@@ -67,6 +67,14 @@ There is no fully defined local toolchain yet.
 
 Before suggesting commands, verify that required files exist.
 
+Frontend commands are available once `apps/frontend/` exists:
+
+```bash
+npm run frontend:dev
+npm run frontend:build
+npm run frontend:test -- --run
+```
+
 Useful basic commands:
 
 ```bash
@@ -96,6 +104,12 @@ When tests are added:
 * place them near the relevant app or in `tests/`
 * name them after behavior (e.g., `booking-slots.test.*`)
 * document how to run them locally
+
+When frontend tests are present:
+
+* place component and interaction tests in `apps/frontend/src/`
+* keep pure state logic tests near `apps/frontend/src/lib/`
+* document any new frontend tooling in `README.md`
 
 ---
 

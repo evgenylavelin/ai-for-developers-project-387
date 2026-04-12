@@ -87,9 +87,9 @@ h1 {
 }
 
 .progress-step {
-  display: flex;
-  gap: 8px;
-  align-items: center;
+  display: grid;
+  gap: 6px;
+  align-content: center;
   min-height: 44px;
   padding: 10px 12px;
   border: 1px solid #d9e2d5;
@@ -110,12 +110,38 @@ h1 {
 }
 
 .progress-step__index {
-  font-size: 12px;
+  display: block;
+  font-size: 10px;
+  line-height: 1;
+  color: #7a8a76;
+}
+
+.progress-step__label {
+  font-size: 14px;
+  font-weight: 600;
 }
 
 .selection-summary {
-  margin: 0 0 12px;
-  color: #4a5846;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 18px;
+  padding: 10px 12px;
+  border: 1px solid #d9e2d5;
+  border-radius: 14px;
+  background: #fff;
+}
+
+.selection-summary__chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 0 16px;
+  border: 1px solid #d9e2d5;
+  border-radius: 999px;
+  background: #edf3eb;
+  color: #182117;
   font-size: 14px;
 }
 
@@ -163,8 +189,32 @@ h1 {
 }
 
 .calendar-day {
+  position: relative;
   place-items: center;
+  min-height: 88px;
+  padding-top: 28px;
   text-align: center;
+}
+
+.calendar-day__weekday {
+  position: absolute;
+  top: 10px;
+  left: 12px;
+  font-size: 11px;
+  color: #667562;
+}
+
+.calendar-day__slots {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  font-size: 11px;
+  color: #667562;
+}
+
+.calendar-day__number {
+  font-size: 1.5rem;
+  line-height: 1.1;
 }
 
 .slot-button {

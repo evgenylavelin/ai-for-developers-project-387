@@ -33,7 +33,15 @@ export function buildProgressSteps(kind: EntryStateKind): string[] {
 }
 
 export function formatSummary(summary: GuestFlowSummary): string {
-  return [summary.eventTypeTitle, summary.fullDateLabel, summary.timeLabel]
-    .filter(Boolean)
-    .join(" • ");
+  return buildSummaryParts(summary).join(" • ");
+}
+
+export function buildSummaryParts(summary: GuestFlowSummary): string[] {
+  return [summary.eventTypeTitle, summary.fullDateLabel, summary.timeLabel].filter(Boolean);
+}
+
+export function buildStepSummaryParts(summary: GuestFlowSummary): string[] {
+  const dateTimePart = [summary.fullDateLabel, summary.timeLabel].filter(Boolean).join(" • ");
+
+  return [summary.eventTypeTitle, dateTimePart].filter(Boolean);
 }

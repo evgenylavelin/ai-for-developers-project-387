@@ -1,6 +1,11 @@
 import { useEffect, useState } from "react";
 
-import { buildProgressSteps, deriveEntryState, formatSummary } from "../lib/guestFlow";
+import {
+  buildProgressSteps,
+  buildStepSummaryParts,
+  deriveEntryState,
+  formatSummary,
+} from "../lib/guestFlow";
 import type { EventType, SlotDate } from "../types";
 import { ContactsStep } from "./ContactsStep";
 import { DateTimeStep } from "./DateTimeStep";
@@ -82,12 +87,18 @@ export function GuestBookingPage({ eventTypes, dates }: GuestBookingPageProps) {
     fullDateLabel: activeDate?.fullLabel,
     timeLabel: selectedTime || undefined,
   });
-  const summary =
+  const summaryParts =
     currentScreen === "event-type"
-      ? ""
-      : currentScreen === "date-time" && !selectedTime
-        ? selectedEventType?.title ?? ""
-        : fullSummary;
+      ? []
+      : currentScreen === "date-time"
+        ? startsWithEventType && selectedEventType?.title
+          ? [selectedEventType.title]
+          : []
+        : buildStepSummaryParts({
+            eventTypeTitle: selectedEventType?.title,
+            fullDateLabel: activeDate?.fullLabel,
+            timeLabel: selectedTime || undefined,
+          });
 
   if (currentScreen === "success") {
     return <SuccessState summary={fullSummary} />;
@@ -133,7 +144,7 @@ export function GuestBookingPage({ eventTypes, dates }: GuestBookingPageProps) {
     <section className="panel">
       <p className="eyebrow">Call Planner</p>
       <ProgressSteps steps={steps} activeIndex={activeIndex} />
-      <SelectionSummary value={summary} />
+      <SelectionSummary values={summaryParts} />
       <h1>{heading}</h1>
       <p className="panel-copy">{copy}</p>
       {currentScreen === "event-type" ? (

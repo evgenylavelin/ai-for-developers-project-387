@@ -47,6 +47,7 @@ describe("App", () => {
     render(<App scenario="single" />);
 
     expect(screen.getByText("Ср")).toBeInTheDocument();
+    expect(screen.getByText("4 сл.")).toBeInTheDocument();
     expect(screen.getByText("15")).toBeInTheDocument();
     expect(screen.getByText("Среда, 15 апреля")).toBeInTheDocument();
   });
@@ -71,14 +72,14 @@ describe("App", () => {
     expect(progressItems[1]).toHaveClass("progress-step--active");
   });
 
-  it("shows the selected full date and time in the summary on the date and time step", async () => {
+  it("shows only the previous-step selection in the summary on the date and time step", async () => {
     const user = userEvent.setup();
 
     render(<App scenario="single" />);
 
     await user.click(screen.getByRole("button", { name: "09:00" }));
 
-    expect(screen.getByText("30 минут • Среда, 15 апреля • 09:00")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Результат предыдущих шагов")).not.toBeInTheDocument();
   });
 
   it("shows empty-state copy when the selected date has no available slots", async () => {
@@ -100,11 +101,11 @@ describe("App", () => {
 
     await user.click(screen.getByRole("button", { name: "09:00" }));
 
-    expect(screen.getByText("30 минут • Среда, 15 апреля • 09:00")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Результат предыдущих шагов")).not.toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Чт 16" }));
 
-    expect(screen.queryByText("30 минут • Среда, 15 апреля • 09:00")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Результат предыдущих шагов")).not.toBeInTheDocument();
     expect(
       screen.getByText("На выбранный день свободных слотов нет. Выберите другую дату."),
     ).toBeInTheDocument();
@@ -145,12 +146,12 @@ describe("App", () => {
 
     await user.click(screen.getByRole("button", { name: "09:00" }));
 
-    expect(screen.getByText("30 минут • Среда, 15 апреля • 09:00")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Результат предыдущих шагов")).not.toBeInTheDocument();
 
     rerender(<GuestBookingPage eventTypes={singleEventType} dates={nextDates} />);
 
     expect(screen.getByText("Суббота, 18 апреля")).toBeInTheDocument();
-    expect(screen.queryByText("30 минут • Среда, 15 апреля • 09:00")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Результат предыдущих шагов")).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Далее" })).toBeDisabled();
   });
 
@@ -163,14 +164,18 @@ describe("App", () => {
     await user.click(screen.getByRole("button", { name: "Далее" }));
     await user.click(screen.getByRole("button", { name: "09:00" }));
 
-    expect(screen.getByText("30 минут • Среда, 15 апреля • 09:00")).toBeInTheDocument();
+    expect(within(screen.getByLabelText("Результат предыдущих шагов")).getByText("30 минут")).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Назад" }));
     await user.click(screen.getByRole("button", { name: "15 минут" }));
     await user.click(screen.getByRole("button", { name: "Далее" }));
 
     expect(screen.getByText("15 минут")).toBeInTheDocument();
-    expect(screen.queryByText("15 минут • Среда, 15 апреля • 09:00")).not.toBeInTheDocument();
+    expect(
+      within(screen.getByLabelText("Результат предыдущих шагов")).queryByText(
+        "Среда, 15 апреля • 09:00",
+      ),
+    ).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Далее" })).toBeDisabled();
   });
 
@@ -191,7 +196,11 @@ describe("App", () => {
     await user.click(screen.getByRole("button", { name: "10:30" }));
     await user.click(screen.getByRole("button", { name: "Далее" }));
 
-    expect(screen.getByText("30 минут • Среда, 15 апреля • 10:30")).toBeInTheDocument();
+    expect(
+      within(screen.getByLabelText("Результат предыдущих шагов")).getByText(
+        "Среда, 15 апреля • 10:30",
+      ),
+    ).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Подтвердить" })).toBeInTheDocument();
   });
 

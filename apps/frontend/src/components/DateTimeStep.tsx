@@ -36,10 +36,14 @@ export function DateTimeStep({
               key={date.isoDate}
               type="button"
               className={`calendar-day${active ? " calendar-day--selected" : ""}`}
+              aria-label={`${date.weekdayShort} ${date.dayNumber}`}
               onClick={() => onSelectDate(date.isoDate)}
             >
-              <span>{date.weekdayShort}</span>
-              <span>{date.dayNumber}</span>
+              <span className="calendar-day__weekday">{date.weekdayShort}</span>
+              <span className="calendar-day__slots" aria-hidden="true">
+                {date.slots.length} сл.
+              </span>
+              <span className="calendar-day__number">{date.dayNumber}</span>
             </button>
           );
         })}

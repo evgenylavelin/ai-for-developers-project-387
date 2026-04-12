@@ -119,6 +119,24 @@ npm run spec:compile
 npm run spec:format
 ```
 
+Запуск frontend-приложения:
+
+```bash
+npm run frontend:dev
+```
+
+Сборка frontend-приложения:
+
+```bash
+npm run frontend:build
+```
+
+Запуск frontend-тестов:
+
+```bash
+npm run frontend:test -- --run
+```
+
 ---
 
 ## 🎯 Цель проекта

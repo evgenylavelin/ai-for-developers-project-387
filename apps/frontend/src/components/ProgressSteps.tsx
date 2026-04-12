@@ -13,7 +13,7 @@ export function ProgressSteps({ steps, activeIndex }: ProgressStepsProps) {
         return (
           <li key={step} className={`progress-step progress-step--${state}`}>
             <span className="progress-step__index">{index + 1}</span>
-            <span>{step}</span>
+            <span className="progress-step__label">{step}</span>
           </li>
         );
       })}
