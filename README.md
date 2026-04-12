@@ -126,9 +126,12 @@ npm run spec:format
 npm run frontend:dev
 ```
 
-В режиме разработки frontend проксирует API-запросы `'/schedule'`, `'/event-types'` и `'/bookings'`
+В режиме разработки frontend проксирует API-запросы `'/schedule'`, `'/event-types'`, `'/owner/event-types'` и `'/bookings'`
 на backend по адресу `http://localhost:3001`. Если backend запущен на другом адресе, задайте
 `VITE_API_BASE_URL`.
+
+Хранилище backend остается in-memory: после перезапуска сервера расписание, типы событий и
+бронирования сбрасываются.
 
 Сборка frontend-приложения:
 

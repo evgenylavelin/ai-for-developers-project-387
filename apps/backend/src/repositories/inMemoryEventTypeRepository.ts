@@ -1,27 +1,35 @@
-import type { EventType } from "../types.js";
+import type { StoredEventType } from "../types.js";
 
 export class InMemoryEventTypeRepository {
-  private readonly items = new Map<string, EventType>();
+  private readonly items = new Map<string, StoredEventType>();
 
-  list(): EventType[] {
+  list(): StoredEventType[] {
     return [...this.items.values()].map(cloneEventType);
   }
 
-  get(id: string): EventType | null {
+  listActive(): StoredEventType[] {
+    return this.list().filter((eventType) => !eventType.isArchived);
+  }
+
+  get(id: string): StoredEventType | null {
     const eventType = this.items.get(id);
 
     return eventType ? cloneEventType(eventType) : null;
   }
 
-  save(eventType: EventType): EventType {
+  save(eventType: StoredEventType): StoredEventType {
     const clonedEventType = cloneEventType(eventType);
 
     this.items.set(clonedEventType.id, clonedEventType);
 
     return cloneEventType(clonedEventType);
   }
+
+  delete(id: string): boolean {
+    return this.items.delete(id);
+  }
 }
 
-function cloneEventType(eventType: EventType): EventType {
+function cloneEventType(eventType: StoredEventType): StoredEventType {
   return { ...eventType };
 }

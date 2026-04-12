@@ -1,11 +1,9 @@
 import { describe, expect, it } from "vitest";
 
 import {
-  archiveOwnerEventType,
+  buildOwnerEventTypeInput,
   buildOwnerEventTypeForm,
   createEmptyOwnerEventTypeForm,
-  deleteOwnerEventType,
-  saveOwnerEventType,
   validateOwnerEventTypeForm,
 } from "./ownerEventTypes";
 import type { OwnerEventType } from "../types";
@@ -80,70 +78,29 @@ describe("ownerEventTypes helpers", () => {
     ).toBe("");
   });
 
-  it("saves a new event type with trimmed fields and a unique generated id", () => {
-    const result = saveOwnerEventType(
-      baseEventTypes,
-      {
-        title: "  Короткий созвон  ",
-        description: "  Новый формат для быстрых решений.  ",
-        durationMinutes: "25",
-      },
-      null,
-    );
-
-    expect(result.selectedEventTypeId).toBe("короткий-созвон");
-    expect(result.eventTypes[0]).toEqual({
-      id: "короткий-созвон",
-      title: "Короткий созвон",
-      description: "Новый формат для быстрых решений.",
-      durationMinutes: 25,
-      isArchived: false,
-      hasBookings: false,
-    });
-    expect(baseEventTypes).toHaveLength(2);
-    expect(baseEventTypes[0].title).toBe("Стратегическая сессия");
-  });
-
-  it("updates the selected event type in edit mode and keeps its id selected", () => {
-    const result = saveOwnerEventType(
-      baseEventTypes,
-      {
+  it("builds a trimmed API payload from the form values", () => {
+    expect(
+      buildOwnerEventTypeInput({
         title: "  Обновленный созвон ",
         description: "  Обновленное описание. ",
         durationMinutes: "30",
-      },
-      "sync",
-    );
+      }),
+    ).toEqual({
+      title: "Обновленный созвон",
+      description: "Обновленное описание.",
+      durationMinutes: 30,
+    });
 
-    expect(result.selectedEventTypeId).toBe("sync");
-    expect(result.eventTypes).toEqual([
-      baseEventTypes[0],
-      {
-        ...baseEventTypes[1],
-        title: "Обновленный созвон",
-        description: "Обновленное описание.",
-        durationMinutes: 30,
-      },
-    ]);
-  });
-
-  it("archives only the requested event type", () => {
-    const result = archiveOwnerEventType(baseEventTypes, "sync");
-
-    expect(result).toEqual([
-      baseEventTypes[0],
-      {
-        ...baseEventTypes[1],
-        isArchived: true,
-      },
-    ]);
-    expect(baseEventTypes[1].isArchived).toBe(false);
-  });
-
-  it("deletes only the requested unused event type from the list", () => {
-    const result = deleteOwnerEventType(baseEventTypes, "sync");
-
-    expect(result).toEqual([baseEventTypes[0]]);
-    expect(baseEventTypes).toHaveLength(2);
+    expect(
+      buildOwnerEventTypeInput({
+        title: "Созвон",
+        description: "   ",
+        durationMinutes: "15",
+      }),
+    ).toEqual({
+      title: "Созвон",
+      description: undefined,
+      durationMinutes: 15,
+    });
   });
 });

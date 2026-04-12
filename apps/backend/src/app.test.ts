@@ -131,7 +131,7 @@ describe("backend routes", () => {
 
     const createResponse = await app.inject({
       method: "POST",
-      url: "/event-types",
+      url: "/owner/event-types",
       payload: {
         title: "Стратегическая сессия",
         description: "Разбор целей и следующих шагов.",
@@ -160,7 +160,7 @@ describe("backend routes", () => {
 
     const response = await app.inject({
       method: "POST",
-      url: "/event-types",
+      url: "/owner/event-types",
       payload: {
         title: "Ошибка",
         description: "Некорректная длительность.",
@@ -182,7 +182,7 @@ describe("backend routes", () => {
 
     const response = await app.inject({
       method: "POST",
-      url: "/event-types",
+      url: "/owner/event-types",
       payload: {
         title: "   ",
         description: "Некорректный заголовок.",
@@ -199,6 +199,312 @@ describe("backend routes", () => {
     await app.close();
   });
 
+  it("returns archived event types in the owner list but not in the guest list", async () => {
+    const app = createApp();
+
+    const createResponse = await app.inject({
+      method: "POST",
+      url: "/owner/event-types",
+      payload: {
+        title: "Диагностика",
+        description: "Проверка запроса.",
+        durationMinutes: 30,
+      },
+    });
+
+    const { id } = createResponse.json() as { id: string };
+
+    const archiveResponse = await app.inject({
+      method: "POST",
+      url: `/owner/event-types/${id}:archive`,
+    });
+
+    expect(archiveResponse.statusCode).toBe(200);
+    expect(archiveResponse.json()).toEqual(
+      expect.objectContaining({
+        id,
+        title: "Диагностика",
+        description: "Проверка запроса.",
+        durationMinutes: 30,
+        isArchived: true,
+        hasBookings: false,
+      }),
+    );
+
+    const ownerListResponse = await app.inject({ method: "GET", url: "/owner/event-types" });
+    const guestListResponse = await app.inject({ method: "GET", url: "/event-types" });
+
+    expect(ownerListResponse.statusCode).toBe(200);
+    expect(ownerListResponse.json()).toEqual([
+      expect.objectContaining({ id, isArchived: true, hasBookings: false }),
+    ]);
+
+    expect(guestListResponse.statusCode).toBe(200);
+    expect(guestListResponse.json()).toEqual([]);
+
+    await app.close();
+  });
+
+  it("rejects archived event type availability requests for guests", async () => {
+    const app = createApp();
+
+    const createResponse = await app.inject({
+      method: "POST",
+      url: "/owner/event-types",
+      payload: {
+        title: "Архивная встреча",
+        description: "Недоступна для гостей.",
+        durationMinutes: 30,
+      },
+    });
+
+    const { id } = createResponse.json() as { id: string };
+
+    await app.inject({
+      method: "POST",
+      url: `/owner/event-types/${id}:archive`,
+    });
+
+    const response = await app.inject({
+      method: "GET",
+      url: `/event-types/${id}/availability`,
+    });
+
+    expect(response.statusCode).toBe(404);
+    expect(response.json()).toEqual({
+      code: "not_found",
+      message: "Event type not found.",
+    });
+
+    await app.close();
+  });
+
+  it("rejects bookings for archived event types", async () => {
+    const app = createApp();
+    const bookingStart = nextBookableSlotStart(new Date());
+    const bookingEnd = new Date(bookingStart.getTime() + 30 * 60 * 1000);
+
+    const createResponse = await app.inject({
+      method: "POST",
+      url: "/owner/event-types",
+      payload: {
+        title: "Архивная встреча",
+        description: "Недоступна для бронирования.",
+        durationMinutes: 30,
+      },
+    });
+
+    const { id } = createResponse.json() as { id: string };
+
+    await app.inject({
+      method: "POST",
+      url: `/owner/event-types/${id}:archive`,
+    });
+
+    const response = await app.inject({
+      method: "POST",
+      url: "/bookings",
+      payload: {
+        eventTypeId: id,
+        startAt: bookingStart.toISOString(),
+        endAt: bookingEnd.toISOString(),
+        guestName: "Guest",
+        guestEmail: "guest@example.com",
+      },
+    });
+
+    expect(response.statusCode).toBe(404);
+    expect(response.json()).toEqual({
+      code: "not_found",
+      message: "Event type not found.",
+    });
+
+    await app.close();
+  });
+
+  it("updates owner event types", async () => {
+    const app = createApp();
+
+    const createResponse = await app.inject({
+      method: "POST",
+      url: "/owner/event-types",
+      payload: {
+        title: "Исходная встреча",
+        description: "Первичное описание.",
+        durationMinutes: 30,
+      },
+    });
+
+    const { id } = createResponse.json() as { id: string };
+
+    const updateResponse = await app.inject({
+      method: "PATCH",
+      url: `/owner/event-types/${id}`,
+      payload: {
+        title: "Обновленная встреча",
+        description: "Новое описание.",
+        durationMinutes: 45,
+      },
+    });
+
+    expect(updateResponse.statusCode).toBe(200);
+    expect(updateResponse.json()).toEqual({
+      id,
+      title: "Обновленная встреча",
+      description: "Новое описание.",
+      durationMinutes: 45,
+      isArchived: false,
+      hasBookings: false,
+    });
+
+    const ownerListResponse = await app.inject({ method: "GET", url: "/owner/event-types" });
+
+    expect(ownerListResponse.json()).toEqual([
+      {
+        id,
+        title: "Обновленная встреча",
+        description: "Новое описание.",
+        durationMinutes: 45,
+        isArchived: false,
+        hasBookings: false,
+      },
+    ]);
+
+    await app.close();
+  });
+
+  it("rejects updating a missing owner event type", async () => {
+    const app = createApp();
+
+    const response = await app.inject({
+      method: "PATCH",
+      url: "/owner/event-types/missing",
+      payload: {
+        title: "Обновленная встреча",
+        description: "Новое описание.",
+        durationMinutes: 45,
+      },
+    });
+
+    expect(response.statusCode).toBe(404);
+    expect(response.json()).toEqual({
+      code: "not_found",
+      message: "Event type not found.",
+    });
+
+    await app.close();
+  });
+
+  it("rejects archiving an already archived event type", async () => {
+    const app = createApp();
+
+    const createResponse = await app.inject({
+      method: "POST",
+      url: "/owner/event-types",
+      payload: {
+        title: "Архивируемая встреча",
+        description: "Описание.",
+        durationMinutes: 30,
+      },
+    });
+
+    const { id } = createResponse.json() as { id: string };
+
+    const firstArchiveResponse = await app.inject({
+      method: "POST",
+      url: `/owner/event-types/${id}:archive`,
+    });
+
+    expect(firstArchiveResponse.statusCode).toBe(200);
+
+    const secondArchiveResponse = await app.inject({
+      method: "POST",
+      url: `/owner/event-types/${id}:archive`,
+    });
+
+    expect(secondArchiveResponse.statusCode).toBe(409);
+    expect(secondArchiveResponse.json()).toEqual({
+      code: "conflict",
+      message: "Event type is already archived.",
+    });
+
+    await app.close();
+  });
+
+  it("deletes unused event types", async () => {
+    const app = createApp();
+
+    const createResponse = await app.inject({
+      method: "POST",
+      url: "/owner/event-types",
+      payload: {
+        title: "Удаляемая встреча",
+        description: "Описание.",
+        durationMinutes: 30,
+      },
+    });
+
+    const { id } = createResponse.json() as { id: string };
+
+    const deleteResponse = await app.inject({
+      method: "DELETE",
+      url: `/owner/event-types/${id}`,
+    });
+
+    expect(deleteResponse.statusCode).toBe(204);
+    expect(deleteResponse.body).toBe("");
+
+    const ownerListResponse = await app.inject({ method: "GET", url: "/owner/event-types" });
+    expect(ownerListResponse.json()).toEqual([]);
+
+    await app.close();
+  });
+
+  it("rejects deletion for event types used in bookings", async () => {
+    const app = createApp();
+    const bookingStart = nextBookableSlotStart(new Date());
+    const bookingEnd = new Date(bookingStart.getTime() + 30 * 60 * 1000);
+
+    const createResponse = await app.inject({
+      method: "POST",
+      url: "/owner/event-types",
+      payload: {
+        title: "Занятая встреча",
+        description: "Описание.",
+        durationMinutes: 30,
+      },
+    });
+
+    const { id } = createResponse.json() as { id: string };
+
+    const bookingResponse = await app.inject({
+      method: "POST",
+      url: "/bookings",
+      payload: {
+        eventTypeId: id,
+        startAt: bookingStart.toISOString(),
+        endAt: bookingEnd.toISOString(),
+        guestName: "Guest",
+        guestEmail: "guest@example.com",
+      },
+    });
+
+    expect(bookingResponse.statusCode).toBe(201);
+
+    const deleteResponse = await app.inject({
+      method: "DELETE",
+      url: `/owner/event-types/${id}`,
+    });
+
+    expect(deleteResponse.statusCode).toBe(409);
+    expect(deleteResponse.json()).toEqual({
+      code: "conflict",
+      message: "Used event types can only be archived.",
+    });
+
+    await app.close();
+  });
+
   it("returns only free availability slots for the requested event type duration", async () => {
     const app = createApp();
     const bookingStart = nextBookableSlotStart(new Date());
@@ -206,7 +512,7 @@ describe("backend routes", () => {
 
     const create60Response = await app.inject({
       method: "POST",
-      url: "/event-types",
+      url: "/owner/event-types",
       payload: {
         title: "Стратегическая сессия",
         description: "Разбор целей и следующих шагов.",
@@ -216,7 +522,7 @@ describe("backend routes", () => {
 
     const create30Response = await app.inject({
       method: "POST",
-      url: "/event-types",
+      url: "/owner/event-types",
       payload: {
         title: "Короткая синхронизация",
         description: "Проверка статуса.",
@@ -287,12 +593,14 @@ describe("backend routes", () => {
       title: "Стратегическая сессия",
       description: "Разбор целей и следующих шагов.",
       durationMinutes: 60,
+      isArchived: false,
     });
     eventTypeRepository.save({
       id: "event-type-30",
       title: "Синхронизация",
       description: "Проверка статуса.",
       durationMinutes: 30,
+      isArchived: false,
     });
 
     const bookedResponse = bookingService.createBooking(
@@ -339,7 +647,7 @@ describe("backend routes", () => {
 
     const eventTypeResponse = await app.inject({
       method: "POST",
-      url: "/event-types",
+      url: "/owner/event-types",
       payload: {
         title: "Стратегическая сессия",
         description: "Разбор целей и следующих шагов.",
@@ -367,7 +675,7 @@ describe("backend routes", () => {
 
     const offBoundaryEventTypeResponse = await offBoundaryApp.inject({
       method: "POST",
-      url: "/event-types",
+      url: "/owner/event-types",
       payload: {
         title: "Проверка границы",
         description: "Проверка границы слота.",
@@ -406,7 +714,7 @@ describe("backend routes", () => {
 
     const eventTypeResponse = await app.inject({
       method: "POST",
-      url: "/event-types",
+      url: "/owner/event-types",
       payload: {
         title: "Стратегическая сессия",
         description: "Разбор целей и следующих шагов.",
@@ -468,7 +776,7 @@ describe("backend routes", () => {
 
     const eventTypeResponse = await app.inject({
       method: "POST",
-      url: "/event-types",
+      url: "/owner/event-types",
       payload: {
         title: "Стратегическая сессия",
         description: "Разбор целей и следующих шагов.",
@@ -540,7 +848,7 @@ describe("backend routes", () => {
 
     const eventTypeResponse = await app.inject({
       method: "POST",
-      url: "/event-types",
+      url: "/owner/event-types",
       payload: {
         title: "Стратегическая сессия",
         description: "Разбор целей и следующих шагов.",
@@ -595,6 +903,7 @@ describe("backend routes", () => {
       title: "Двухчасовая встреча",
       description: "Проверка окна бронирования.",
       durationMinutes: 120,
+      isArchived: false,
     });
     scheduleRepository.save({
       workingDays: ["monday", "tuesday", "wednesday", "thursday", "friday"],

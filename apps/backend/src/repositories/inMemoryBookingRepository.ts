@@ -20,6 +20,10 @@ export class InMemoryBookingRepository {
 
     return cloneBooking(clonedBooking);
   }
+
+  hasAnyBookingForEventType(eventTypeId: string): boolean {
+    return [...this.items.values()].some((booking) => booking.eventTypeId === eventTypeId);
+  }
 }
 
 function cloneBooking(booking: Booking): Booking {

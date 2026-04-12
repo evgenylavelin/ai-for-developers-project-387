@@ -16,7 +16,7 @@ export function createApp() {
   const eventTypeRepository = new InMemoryEventTypeRepository();
   const bookingRepository = new InMemoryBookingRepository();
   const scheduleService = new ScheduleService(scheduleRepository);
-  const eventTypeService = new EventTypeService(eventTypeRepository);
+  const eventTypeService = new EventTypeService(eventTypeRepository, bookingRepository);
   const bookingService = new BookingService(bookingRepository, eventTypeRepository, scheduleRepository);
 
   registerScheduleRoutes(app, scheduleService);

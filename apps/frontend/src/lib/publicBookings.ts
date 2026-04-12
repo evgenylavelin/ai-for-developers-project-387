@@ -1,12 +1,12 @@
 import type {
   AvailableDatesByEventType,
   Booking,
-  BookingDraft,
   CalendarDaySummary,
   EventType,
   ScheduleDay,
-  SlotDate,
 } from "../types";
+
+import type { CalendarDay } from "./publicCalendar";
 
 export const ALL_EVENT_TYPES_FILTER = "all";
 
@@ -33,7 +33,7 @@ function getActiveIntervalKeys(bookings: Booking[]): Set<string> {
   );
 }
 
-function toSlotDate(day: ScheduleDay, slots: string[]): SlotDate {
+function toSlotDate(day: ScheduleDay, slots: string[]) {
   return {
     isoDate: day.isoDate,
     weekdayShort: day.weekdayShort,
@@ -43,7 +43,7 @@ function toSlotDate(day: ScheduleDay, slots: string[]): SlotDate {
   };
 }
 
-export function buildAvailableDatesByEventType(
+export function buildAvailableDatesFromSchedule(
   schedule: ScheduleDay[],
   eventTypes: EventType[],
   bookings: Booking[],
@@ -69,12 +69,12 @@ export function buildAvailableDatesByEventType(
 }
 
 export function buildCalendarDaySummaries(
-  schedule: ScheduleDay[],
+  calendarDays: CalendarDay[],
   bookings: Booking[],
   availableDatesByEventType: AvailableDatesByEventType,
   selectedFilterId: string,
 ): CalendarDaySummary[] {
-  return schedule.map((day) => {
+  return calendarDays.map((day) => {
     const activeBookings = bookings.filter(
       (booking) => booking.status === "active" && getBookingDate(booking) === day.isoDate,
     );
@@ -107,14 +107,14 @@ export function listBookingsForDate(bookings: Booking[], isoDate: string): Booki
     .sort((left, right) => left.startAt.localeCompare(right.startAt));
 }
 
-export function getInitialSelectedDate(schedule: ScheduleDay[], bookings: Booking[]): string {
+export function getInitialSelectedDate(calendarDays: CalendarDay[], bookings: Booking[]): string {
   const firstBookingDate = bookings[0] ? getBookingDate(bookings[0]) : "";
 
-  if (firstBookingDate && schedule.some((day) => day.isoDate === firstBookingDate)) {
+  if (firstBookingDate && calendarDays.some((day) => day.isoDate === firstBookingDate)) {
     return firstBookingDate;
   }
 
-  return schedule[0]?.isoDate ?? "";
+  return calendarDays[0]?.isoDate ?? "";
 }
 
 export function cancelPublicBooking(bookings: Booking[], bookingId: string): Booking[] {
@@ -134,24 +134,4 @@ function addMinutes(time: string, minutesToAdd: number): string {
   const endMinutes = (totalMinutes % 60).toString().padStart(2, "0");
 
   return `${endHours}:${endMinutes}`;
-}
-
-export function createMockBooking(eventTypes: EventType[], draft: BookingDraft): Booking {
-  const eventType = eventTypes.find((item) => item.id === draft.eventTypeId);
-
-  if (!eventType) {
-    throw new Error(`Unknown event type: ${draft.eventTypeId}`);
-  }
-
-  const endTime = addMinutes(draft.time, eventType.durationMinutes);
-
-  return {
-    id: `booking-${draft.eventTypeId}-${draft.isoDate}-${draft.time}`,
-    eventTypeId: draft.eventTypeId,
-    startAt: `${draft.isoDate}T${draft.time}:00Z`,
-    endAt: `${draft.isoDate}T${endTime}:00Z`,
-    guestName: draft.guestName.trim(),
-    guestEmail: draft.guestEmail.trim(),
-    status: "active",
-  };
 }

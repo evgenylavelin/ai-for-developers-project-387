@@ -5,11 +5,188 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import App from "./App";
 import { GuestBookingPage } from "./components/GuestBookingPage";
 import { bookingSchedule, multiEventTypes, singleEventType } from "./data/mockGuestFlow";
-import { buildAvailableDatesByEventType } from "./lib/publicBookings";
+import { buildPublicCalendarDays } from "./lib/publicCalendar";
+import { buildAvailableDatesFromSchedule } from "./lib/publicBookings";
 
 afterEach(() => {
+  vi.useRealTimers();
   vi.unstubAllGlobals();
 });
+
+function createJsonResponse(payload: unknown, init?: ResponseInit): Response {
+  return new Response(JSON.stringify(payload), {
+    status: init?.status ?? 200,
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+}
+
+function createApiErrorResponse(message: string, status = 409): Response {
+  return createJsonResponse({ message }, { status });
+}
+
+function createApiBookingDay() {
+  const day = buildPublicCalendarDays()[3];
+
+  return {
+    ...day,
+    shortLabel: `${day.weekdayShort} ${day.dayNumber}`,
+  };
+}
+
+function createOwnerEventTypesFetchMock() {
+  const bookingDay = createApiBookingDay();
+  let ownerEventTypes = [
+    {
+      id: "strategy",
+      title: "Стратегическая сессия",
+      description: "Разбор текущей ситуации, целей на квартал и следующих шагов.",
+      durationMinutes: 60,
+      isArchived: false,
+      hasBookings: true,
+    },
+    {
+      id: "sync",
+      title: "Короткий созвон",
+      description: "Быстро сверяем контекст, блокеры и решения по текущей задаче.",
+      durationMinutes: 20,
+      isArchived: false,
+      hasBookings: false,
+    },
+    {
+      id: "retrospective",
+      title: "Ретроспектива проекта",
+      description: "Формат для разбора завершенного этапа и фиксации выводов.",
+      durationMinutes: 45,
+      isArchived: true,
+      hasBookings: true,
+    },
+  ];
+
+  const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = String(input);
+    const method = init?.method ?? "GET";
+
+    if (url.endsWith("/bookings")) {
+      return createJsonResponse([
+        {
+          id: "booking-1",
+          eventTypeId: "strategy",
+          startAt: `${bookingDay.isoDate}T09:00:00Z`,
+          endAt: `${bookingDay.isoDate}T10:00:00Z`,
+          guestName: "Иван Петров",
+          guestEmail: "ivan@example.com",
+          status: "active",
+        },
+      ]);
+    }
+
+    if (/\/event-types\/[^/]+\/availability$/.test(url)) {
+      return createJsonResponse([
+        {
+          startAt: `${bookingDay.isoDate}T10:30:00Z`,
+          endAt: `${bookingDay.isoDate}T11:00:00Z`,
+        },
+      ]);
+    }
+
+    if (url.endsWith("/owner/event-types") && method === "GET") {
+      return createJsonResponse(ownerEventTypes);
+    }
+
+    if (url.endsWith("/owner/event-types") && method === "POST") {
+      const payload = JSON.parse(String(init?.body ?? "{}")) as {
+        title: string;
+        description?: string;
+        durationMinutes: number;
+      };
+      const createdEventType = {
+        id: `created-${ownerEventTypes.length + 1}`,
+        title: payload.title,
+        description: payload.description,
+        durationMinutes: payload.durationMinutes,
+        isArchived: false,
+        hasBookings: false,
+      };
+
+      ownerEventTypes = [createdEventType, ...ownerEventTypes];
+
+      return createJsonResponse(
+        {
+          id: createdEventType.id,
+          title: createdEventType.title,
+          description: createdEventType.description,
+          durationMinutes: createdEventType.durationMinutes,
+        },
+        { status: 201 },
+      );
+    }
+
+    if (/\/owner\/event-types\/[^:]+:archive$/.test(url) && method === "POST") {
+      const eventTypeId = url.split("/owner/event-types/")[1].replace(":archive", "");
+      const archivedEventType = ownerEventTypes.find((eventType) => eventType.id === eventTypeId);
+
+      if (!archivedEventType) {
+        return createApiErrorResponse("Event type not found.", 404);
+      }
+
+      ownerEventTypes = ownerEventTypes.map((eventType) =>
+        eventType.id === eventTypeId ? { ...eventType, isArchived: true } : eventType,
+      );
+
+      return createJsonResponse(ownerEventTypes.find((eventType) => eventType.id === eventTypeId));
+    }
+
+    if (/\/owner\/event-types\/[^/]+$/.test(url) && method === "PATCH") {
+      const eventTypeId = url.split("/owner/event-types/")[1];
+      const payload = JSON.parse(String(init?.body ?? "{}")) as {
+        title: string;
+        description?: string;
+        durationMinutes: number;
+      };
+
+      ownerEventTypes = ownerEventTypes.map((eventType) =>
+        eventType.id === eventTypeId ? { ...eventType, ...payload } : eventType,
+      );
+
+      return createJsonResponse(ownerEventTypes.find((eventType) => eventType.id === eventTypeId));
+    }
+
+    if (/\/owner\/event-types\/[^/]+$/.test(url) && method === "DELETE") {
+      const eventTypeId = url.split("/owner/event-types/")[1];
+      ownerEventTypes = ownerEventTypes.filter((eventType) => eventType.id !== eventTypeId);
+
+      return new Response(null, { status: 204 });
+    }
+
+    if (url.endsWith("/event-types")) {
+      return createJsonResponse(
+        ownerEventTypes
+          .filter((eventType) => !eventType.isArchived)
+          .map(({ hasBookings: _hasBookings, isArchived: _isArchived, ...eventType }) => eventType),
+      );
+    }
+
+    throw new Error(`Unexpected request: ${url}`);
+  });
+
+  return {
+    fetchMock,
+  };
+}
+
+async function openOwnerEventTypesWorkspace(user: ReturnType<typeof userEvent.setup>) {
+  expect(await screen.findByRole("heading", { name: "Бронирования" })).toBeInTheDocument();
+
+  await user.click(
+    within(screen.getByRole("navigation", { name: "Разделы приложения" })).getByRole("button", {
+      name: "Типы событий",
+    }),
+  );
+
+  expect(await screen.findByRole("heading", { name: "Управление типами событий" })).toBeInTheDocument();
+}
 
 describe("App", () => {
   it("renders the unavailable state when there are no event types", () => {
@@ -26,6 +203,312 @@ describe("App", () => {
     expect(screen.getByRole("heading", { name: "Бронирования" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Записаться" })).toBeInTheDocument();
     expect(screen.getByText("Иван Петров")).toBeInTheDocument();
+  });
+
+  it("loads public bookings and event types from the API on startup", async () => {
+    const bookingDay = createApiBookingDay();
+
+    const fetchMock = vi.fn((input: RequestInfo | URL) => {
+      const url = String(input);
+
+      if (url.endsWith("/owner/event-types")) {
+        return Promise.resolve(createJsonResponse([]));
+      }
+
+      if (url.endsWith("/event-types")) {
+        return Promise.resolve(
+          createJsonResponse([
+            {
+              id: "standard",
+              title: "Стратегическая сессия",
+              durationMinutes: 30,
+            },
+          ]),
+        );
+      }
+
+      if (url.endsWith("/bookings")) {
+        return Promise.resolve(
+          createJsonResponse([
+            {
+              id: "booking-1",
+              eventTypeId: "standard",
+              startAt: `${bookingDay.isoDate}T09:00:00Z`,
+              endAt: `${bookingDay.isoDate}T09:30:00Z`,
+              guestName: "Иван Петров",
+              guestEmail: "ivan@example.com",
+              status: "active",
+            },
+          ]),
+        );
+      }
+
+      if (url.endsWith("/event-types/standard/availability")) {
+        return Promise.resolve(
+          createJsonResponse([
+            {
+              startAt: `${bookingDay.isoDate}T10:30:00Z`,
+              endAt: `${bookingDay.isoDate}T11:00:00Z`,
+            },
+          ]),
+        );
+      }
+
+      throw new Error(`Unexpected request: ${url}`);
+    });
+
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<App />);
+
+    expect(await screen.findByRole("heading", { name: "Бронирования" })).toBeInTheDocument();
+    expect(screen.getByText("Иван Петров")).toBeInTheDocument();
+    expect(fetchMock).toHaveBeenCalledWith("/event-types");
+    expect(fetchMock).toHaveBeenCalledWith("/owner/event-types");
+    expect(fetchMock).toHaveBeenCalledWith("/bookings");
+    expect(fetchMock).toHaveBeenCalledWith("/event-types/standard/availability");
+  });
+
+  it("keeps public startup available when owner event types fail to load", async () => {
+    const bookingDay = createApiBookingDay();
+
+    const fetchMock = vi.fn((input: RequestInfo | URL) => {
+      const url = String(input);
+
+      if (url.endsWith("/owner/event-types")) {
+        return Promise.resolve(
+          createJsonResponse(
+            { message: "Не удалось загрузить типы событий владельца." },
+            { status: 503 },
+          ),
+        );
+      }
+
+      if (url.endsWith("/event-types")) {
+        return Promise.resolve(
+          createJsonResponse([
+            {
+              id: "standard",
+              title: "Стратегическая сессия",
+              durationMinutes: 30,
+            },
+          ]),
+        );
+      }
+
+      if (url.endsWith("/bookings")) {
+        return Promise.resolve(
+          createJsonResponse([
+            {
+              id: "booking-1",
+              eventTypeId: "standard",
+              startAt: `${bookingDay.isoDate}T09:00:00Z`,
+              endAt: `${bookingDay.isoDate}T09:30:00Z`,
+              guestName: "Иван Петров",
+              guestEmail: "ivan@example.com",
+              status: "active",
+            },
+          ]),
+        );
+      }
+
+      if (url.endsWith("/event-types/standard/availability")) {
+        return Promise.resolve(
+          createJsonResponse([
+            {
+              startAt: `${bookingDay.isoDate}T10:30:00Z`,
+              endAt: `${bookingDay.isoDate}T11:00:00Z`,
+            },
+          ]),
+        );
+      }
+
+      throw new Error(`Unexpected request: ${url}`);
+    });
+
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<App />);
+
+    expect(await screen.findByRole("heading", { name: "Бронирования" })).toBeInTheDocument();
+    expect(screen.getByText("Иван Петров")).toBeInTheDocument();
+    expect(
+      screen.queryByRole("heading", { name: "Не удалось загрузить данные" }),
+    ).not.toBeInTheDocument();
+    expect(fetchMock).toHaveBeenCalledWith("/owner/event-types");
+  });
+
+  it("refreshes bookings and availability after a successful API booking", async () => {
+    const bookingDay = createApiBookingDay();
+
+    const bookingsState = [
+      {
+        id: "booking-1",
+        eventTypeId: "standard",
+        startAt: `${bookingDay.isoDate}T09:00:00Z`,
+        endAt: `${bookingDay.isoDate}T09:30:00Z`,
+        guestName: "Иван Петров",
+        guestEmail: "ivan@example.com",
+        status: "active",
+      },
+    ];
+    let availabilityState = [
+      {
+        startAt: `${bookingDay.isoDate}T10:30:00Z`,
+        endAt: `${bookingDay.isoDate}T11:00:00Z`,
+      },
+    ];
+
+    const fetchMock = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+
+      if (url.endsWith("/owner/event-types")) {
+        return Promise.resolve(createJsonResponse([]));
+      }
+
+      if (url.endsWith("/event-types")) {
+        return Promise.resolve(
+          createJsonResponse([
+            {
+              id: "standard",
+              title: "Стратегическая сессия",
+              durationMinutes: 30,
+            },
+          ]),
+        );
+      }
+
+      if (url.endsWith("/bookings") && init?.method === "POST") {
+        bookingsState.push({
+          id: "booking-2",
+          eventTypeId: "standard",
+          startAt: `${bookingDay.isoDate}T10:30:00Z`,
+          endAt: `${bookingDay.isoDate}T11:00:00Z`,
+          guestName: "Мария",
+          guestEmail: "maria@example.com",
+          status: "active",
+        });
+        availabilityState = [];
+
+        return Promise.resolve(createJsonResponse(bookingsState[1]));
+      }
+
+      if (url.endsWith("/bookings")) {
+        return Promise.resolve(createJsonResponse(bookingsState));
+      }
+
+      if (url.endsWith("/event-types/standard/availability")) {
+        return Promise.resolve(createJsonResponse(availabilityState));
+      }
+
+      throw new Error(`Unexpected request: ${url}`);
+    });
+
+    vi.stubGlobal("fetch", fetchMock);
+
+    const user = userEvent.setup();
+
+    render(<App />);
+
+    expect(await screen.findByRole("heading", { name: "Бронирования" })).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Записаться" }));
+    await user.click(screen.getByRole("button", { name: "10:30" }));
+    await user.click(screen.getByRole("button", { name: "Далее" }));
+    await user.type(screen.getByLabelText("Имя"), "Мария");
+    await user.type(screen.getByLabelText("Email"), "maria@example.com");
+    await user.click(screen.getByRole("button", { name: "Подтвердить" }));
+
+    expect(
+      await screen.findByRole("heading", { name: "Бронирование подтверждено" }),
+    ).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Вернуться к бронированиям" }));
+
+    expect(await screen.findByRole("heading", { name: "Бронирования" })).toBeInTheDocument();
+    expect(screen.getByText("Мария")).toBeInTheDocument();
+    expect(
+      within(screen.getByRole("button", { name: bookingDay.fullLabel })).getByText("2 занято"),
+    ).toBeInTheDocument();
+    expect(
+      fetchMock.mock.calls.filter(([url, init]) => String(url).endsWith("/bookings") && !init)
+        .length,
+    ).toBe(2);
+    expect(
+      fetchMock.mock.calls.filter(([url]) =>
+        String(url).endsWith("/event-types/standard/availability"),
+      ).length,
+    ).toBe(2);
+  });
+
+  it("shows an inline submit error when the API booking request fails", async () => {
+    const bookingDay = createApiBookingDay();
+
+    const fetchMock = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+
+      if (url.endsWith("/owner/event-types")) {
+        return Promise.resolve(createJsonResponse([]));
+      }
+
+      if (url.endsWith("/event-types")) {
+        return Promise.resolve(
+          createJsonResponse([
+            {
+              id: "standard",
+              title: "Стратегическая сессия",
+              durationMinutes: 30,
+            },
+          ]),
+        );
+      }
+
+      if (url.endsWith("/bookings") && init?.method === "POST") {
+        return Promise.resolve(createApiErrorResponse("Слот уже занят."));
+      }
+
+      if (url.endsWith("/bookings")) {
+        return Promise.resolve(createJsonResponse([]));
+      }
+
+      if (url.endsWith("/event-types/standard/availability")) {
+        return Promise.resolve(
+          createJsonResponse([
+            {
+              startAt: `${bookingDay.isoDate}T10:30:00Z`,
+              endAt: `${bookingDay.isoDate}T11:00:00Z`,
+            },
+          ]),
+        );
+      }
+
+      throw new Error(`Unexpected request: ${url}`);
+    });
+
+    vi.stubGlobal("fetch", fetchMock);
+
+    const user = userEvent.setup();
+
+    render(<App />);
+
+    expect(
+      await screen.findByRole("heading", { name: "Выберите дату и время" }),
+    ).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: bookingDay.shortLabel }));
+    await user.click(screen.getByRole("button", { name: "10:30" }));
+    await user.click(screen.getByRole("button", { name: "Далее" }));
+    await user.type(screen.getByLabelText("Имя"), "Иван");
+    await user.type(screen.getByLabelText("Email"), "ivan@example.com");
+    await user.click(screen.getByRole("button", { name: "Подтвердить" }));
+
+    expect(await screen.findByText("Слот уже занят.")).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Введите контактные данные" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("heading", { name: "Бронирование подтверждено" }),
+    ).not.toBeInTheDocument();
   });
 
   it("requires event type selection before continuing", async () => {
@@ -226,7 +709,7 @@ describe("App", () => {
 
   it("clears date and time selection after changing the event type", async () => {
     const user = userEvent.setup();
-    const datesByEventType = buildAvailableDatesByEventType(bookingSchedule, multiEventTypes, []);
+    const datesByEventType = buildAvailableDatesFromSchedule(bookingSchedule, multiEventTypes, []);
 
     render(<GuestBookingPage eventTypes={multiEventTypes} datesByEventType={datesByEventType} />);
 
@@ -446,16 +929,15 @@ describe("App", () => {
     expect(screen.queryByText(/Подтвердить удаление|Подтвердить архивирование/)).not.toBeInTheDocument();
   });
 
-  it("saves a new owner event type into the local list state", async () => {
+  it("creates an owner event type through the backend and refreshes public choices", async () => {
     const user = userEvent.setup();
+    const { fetchMock } = createOwnerEventTypesFetchMock();
 
-    render(<App scenario="public" />);
+    vi.stubGlobal("fetch", fetchMock);
 
-    await user.click(
-      within(screen.getByRole("navigation", { name: "Разделы приложения" })).getByRole("button", {
-        name: "Типы событий",
-      }),
-    );
+    render(<App />);
+
+    await openOwnerEventTypesWorkspace(user);
     await user.click(screen.getByRole("button", { name: "+ Создать тип события" }));
     await user.type(screen.getByLabelText("Название"), "Новая диагностика");
     await user.type(
@@ -465,7 +947,7 @@ describe("App", () => {
     await user.type(screen.getByLabelText("Длительность"), "35");
     await user.click(screen.getByRole("button", { name: "Сохранить" }));
 
-    expect(screen.getByText("Новый тип события добавлен в локальный список.")).toBeInTheDocument();
+    expect(await screen.findByText("Тип события создан.")).toBeInTheDocument();
 
     const eventTypesList = screen.getByRole("list", { name: "Список типов событий" });
     const createdEventType = within(eventTypesList).getByRole("button", { name: /Новая диагностика/i });
@@ -473,18 +955,62 @@ describe("App", () => {
     expect(createdEventType).toBeInTheDocument();
     expect(within(createdEventType).getByText("35 мин")).toBeInTheDocument();
     expect(within(createdEventType).getByText("Активен")).toBeInTheDocument();
-  });
-
-  it("deletes an unused owner event type after confirmation", async () => {
-    const user = userEvent.setup();
-
-    render(<App scenario="public" />);
 
     await user.click(
-      within(screen.getByRole("navigation", { name: "Разделы приложения" })).getByRole("button", {
-        name: "Типы событий",
+      within(screen.getByRole("navigation", { name: "Разделы рабочего пространства" })).getByRole("button", {
+        name: "Бронирования",
       }),
     );
+
+    expect(await screen.findByRole("button", { name: /Новая диагностика/i })).toBeInTheDocument();
+    expect(
+      fetchMock.mock.calls.some(
+        ([url, init]) => String(url).endsWith("/owner/event-types") && init?.method === "POST",
+      ),
+    ).toBe(true);
+  });
+
+  it("updates an owner event type through the backend and refreshes public choices", async () => {
+    const user = userEvent.setup();
+    const { fetchMock } = createOwnerEventTypesFetchMock();
+
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<App />);
+
+    await openOwnerEventTypesWorkspace(user);
+    await user.click(screen.getByRole("button", { name: /Короткий созвон/i }));
+    await user.clear(screen.getByLabelText("Название"));
+    await user.type(screen.getByLabelText("Название"), "Короткий статус");
+    await user.clear(screen.getByLabelText("Описание"));
+    await user.type(screen.getByLabelText("Описание"), "Обновленный формат быстрой синхронизации.");
+    await user.clear(screen.getByLabelText("Длительность"));
+    await user.type(screen.getByLabelText("Длительность"), "25");
+    await user.click(screen.getByRole("button", { name: "Сохранить" }));
+
+    expect(await screen.findByText("Изменения сохранены.")).toBeInTheDocument();
+
+    const eventTypesList = screen.getByRole("list", { name: "Список типов событий" });
+    expect(within(eventTypesList).getByRole("button", { name: /Короткий статус/i })).toBeInTheDocument();
+
+    await user.click(
+      within(screen.getByRole("navigation", { name: "Разделы рабочего пространства" })).getByRole("button", {
+        name: "Бронирования",
+      }),
+    );
+
+    expect(await screen.findByRole("button", { name: /Короткий статус/i })).toBeInTheDocument();
+  });
+
+  it("deletes an unused owner event type through the backend", async () => {
+    const user = userEvent.setup();
+    const { fetchMock } = createOwnerEventTypesFetchMock();
+
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<App />);
+
+    await openOwnerEventTypesWorkspace(user);
     await user.click(screen.getByRole("button", { name: /Короткий созвон/i }));
     await user.click(screen.getByRole("button", { name: "Удалить" }));
 
@@ -494,24 +1020,31 @@ describe("App", () => {
 
     await user.click(within(dialog).getByRole("button", { name: "Подтвердить удаление" }));
 
-    expect(screen.getByText("Тип события удален из локального списка.")).toBeInTheDocument();
+    expect(await screen.findByText("Тип события удален.")).toBeInTheDocument();
     expect(
       within(screen.getByRole("list", { name: "Список типов событий" })).queryByRole("button", {
         name: /Короткий созвон/i,
       }),
     ).not.toBeInTheDocument();
-  });
-
-  it("shows archive-only controls for a used type and archives it after confirmation", async () => {
-    const user = userEvent.setup();
-
-    render(<App scenario="public" />);
 
     await user.click(
-      within(screen.getByRole("navigation", { name: "Разделы приложения" })).getByRole("button", {
-        name: "Типы событий",
+      within(screen.getByRole("navigation", { name: "Разделы рабочего пространства" })).getByRole("button", {
+        name: "Бронирования",
       }),
     );
+
+    expect(screen.queryByRole("button", { name: /Короткий созвон/i })).not.toBeInTheDocument();
+  });
+
+  it("archives a used owner event type through the backend and removes it from public choices", async () => {
+    const user = userEvent.setup();
+    const { fetchMock } = createOwnerEventTypesFetchMock();
+
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<App />);
+
+    await openOwnerEventTypesWorkspace(user);
 
     const selectedEventType = within(
       screen.getByRole("list", { name: "Список типов событий" }),
@@ -536,14 +1069,20 @@ describe("App", () => {
 
     await user.click(within(dialog).getByRole("button", { name: "Подтвердить архивирование" }));
 
+    expect(await screen.findByText("Тип события переведен в архив.")).toBeInTheDocument();
     expect(
-      screen.getByText("Тип события переведен в архив в локальном mock-состоянии."),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText("Этот тип находится в архиве. Форма остается доступной для просмотра и локального редактирования."),
+      screen.getByText("Этот тип находится в архиве. Форма остается доступной для просмотра и редактирования."),
     ).toBeInTheDocument();
 
     expect(within(selectedEventType).getByText("Архив")).toBeInTheDocument();
     expect(within(selectedEventType).getByText("Использовался в бронированиях")).toBeInTheDocument();
+
+    await user.click(
+      within(screen.getByRole("navigation", { name: "Разделы рабочего пространства" })).getByRole("button", {
+        name: "Бронирования",
+      }),
+    );
+
+    expect(screen.queryByRole("button", { name: /Стратегическая сессия/i })).not.toBeInTheDocument();
   });
 });

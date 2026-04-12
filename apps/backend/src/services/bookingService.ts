@@ -28,11 +28,7 @@ export class BookingService {
   }
 
   getAvailability(eventTypeId: string, now = new Date()) {
-    const eventType = this.eventTypeRepository.get(eventTypeId);
-
-    if (!eventType) {
-      throw new AppError(404, "not_found", "Event type not found.");
-    }
+    const eventType = this.getBookableEventType(eventTypeId);
 
     const schedule = this.scheduleRepository.get();
     const windowEnd = bookingWindowEnd(now);
@@ -86,11 +82,7 @@ export class BookingService {
     const payload = toCreateBookingInput(input);
     const { startAt, endAt } = parseBookingTimestamps(payload.startAt, payload.endAt);
 
-    const eventType = this.eventTypeRepository.get(payload.eventTypeId);
-
-    if (!eventType) {
-      throw new AppError(404, "not_found", "Event type not found.");
-    }
+    const eventType = this.getBookableEventType(payload.eventTypeId);
 
     if (differenceInMinutes(endAt, startAt) !== eventType.durationMinutes) {
       throw new AppError(409, "conflict", "The selected slot does not match the event duration.");
@@ -146,6 +138,16 @@ export class BookingService {
           booking.status === activeBookingStatus &&
           intervalsOverlap(startAt, endAt, new Date(booking.startAt), new Date(booking.endAt)),
       );
+  }
+
+  private getBookableEventType(eventTypeId: string) {
+    const eventType = this.eventTypeRepository.get(eventTypeId);
+
+    if (!eventType || eventType.isArchived) {
+      throw new AppError(404, "not_found", "Event type not found.");
+    }
+
+    return eventType;
   }
 }
 

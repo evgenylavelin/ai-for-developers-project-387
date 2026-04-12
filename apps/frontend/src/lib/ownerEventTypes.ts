@@ -1,4 +1,4 @@
-import type { OwnerEventType, OwnerEventTypeForm } from "../types";
+import type { OwnerEventType, OwnerEventTypeForm, OwnerEventTypeInput } from "../types";
 
 export function createEmptyOwnerEventTypeForm(): OwnerEventTypeForm {
   return {
@@ -11,7 +11,7 @@ export function createEmptyOwnerEventTypeForm(): OwnerEventTypeForm {
 export function buildOwnerEventTypeForm(eventType: OwnerEventType): OwnerEventTypeForm {
   return {
     title: eventType.title,
-    description: eventType.description,
+    description: eventType.description ?? "",
     durationMinutes: String(eventType.durationMinutes),
   };
 }
@@ -34,68 +34,10 @@ export function validateOwnerEventTypeForm(form: OwnerEventTypeForm): string {
   return "";
 }
 
-export function saveOwnerEventType(
-  eventTypes: OwnerEventType[],
-  form: OwnerEventTypeForm,
-  selectedEventTypeId: string | null,
-): { eventTypes: OwnerEventType[]; selectedEventTypeId: string } {
-  const normalizedEventType = {
+export function buildOwnerEventTypeInput(form: OwnerEventTypeForm): OwnerEventTypeInput {
+  return {
     title: form.title.trim(),
-    description: form.description.trim(),
+    description: form.description.trim() || undefined,
     durationMinutes: Number(form.durationMinutes),
   };
-
-  if (selectedEventTypeId) {
-    return {
-      eventTypes: eventTypes.map((eventType) =>
-        eventType.id === selectedEventTypeId ? { ...eventType, ...normalizedEventType } : eventType,
-      ),
-      selectedEventTypeId,
-    };
-  }
-
-  const nextEventType: OwnerEventType = {
-    id: createOwnerEventTypeId(normalizedEventType.title, eventTypes),
-    isArchived: false,
-    hasBookings: false,
-    ...normalizedEventType,
-  };
-
-  return {
-    eventTypes: [nextEventType, ...eventTypes],
-    selectedEventTypeId: nextEventType.id,
-  };
-}
-
-export function archiveOwnerEventType(
-  eventTypes: OwnerEventType[],
-  eventTypeId: string,
-): OwnerEventType[] {
-  return eventTypes.map((eventType) =>
-    eventType.id === eventTypeId ? { ...eventType, isArchived: true } : eventType,
-  );
-}
-
-export function deleteOwnerEventType(
-  eventTypes: OwnerEventType[],
-  eventTypeId: string,
-): OwnerEventType[] {
-  return eventTypes.filter((eventType) => eventType.id !== eventTypeId);
-}
-
-function createOwnerEventTypeId(title: string, eventTypes: OwnerEventType[]): string {
-  const baseId =
-    title
-      .toLowerCase()
-      .replace(/[^a-z0-9а-яё]+/gi, "-")
-      .replace(/^-+|-+$/g, "") || "event-type";
-  let candidateId = baseId;
-  let suffix = 2;
-
-  while (eventTypes.some((eventType) => eventType.id === candidateId)) {
-    candidateId = `${baseId}-${suffix}`;
-    suffix += 1;
-  }
-
-  return candidateId;
 }

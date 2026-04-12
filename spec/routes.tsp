@@ -26,13 +26,6 @@ interface ScheduleResource {
 @tag("Event Types")
 interface EventTypes {
   /**
-   * Owner-facing operation.
-   * Creates a new event type with a positive duration.
-   */
-  @post
-  create(@body body: CreateEventTypeRequest): EventTypeCreatedResponse | BadRequestError;
-
-  /**
    * Guest-facing and owner-facing operation.
    * Returns the list of bookable event types.
    */
@@ -47,6 +40,51 @@ interface EventTypes {
   @get
   @route("/{eventTypeId}/availability")
   getAvailability(@path eventTypeId: string): AvailabilityResponse | NotFoundError;
+}
+
+@route("/owner/event-types")
+@tag("Owner Event Types")
+interface OwnerEventTypes {
+  /**
+   * Owner-facing operation.
+   * Returns all event types, including archived ones and booking metadata.
+   */
+  @get
+  list(): OwnerEventTypeListResponse;
+
+  /**
+   * Owner-facing operation.
+   * Creates a new event type with a positive duration.
+   */
+  @post
+  create(@body body: CreateEventTypeRequest): EventTypeCreatedResponse | BadRequestError;
+
+  /**
+   * Owner-facing operation.
+   * Updates an existing event type.
+   */
+  @patch
+  @route("/{eventTypeId}")
+  update(
+    @path eventTypeId: string,
+    @body body: UpdateEventTypeRequest,
+  ): OwnerEventTypeResponse | BadRequestError | NotFoundError | ConflictError;
+
+  /**
+   * Owner-facing operation.
+   * Archives an event type without deleting existing bookings.
+   */
+  @post
+  @route("/{eventTypeId}:archive")
+  archive(@path eventTypeId: string): OwnerEventTypeResponse | NotFoundError | ConflictError;
+
+  /**
+   * Owner-facing operation.
+   * Deletes an event type when no constraints prevent removal.
+   */
+  @delete
+  @route("/{eventTypeId}")
+  delete(@path eventTypeId: string): NoContentResponse | NotFoundError | ConflictError;
 }
 
 @route("/bookings")

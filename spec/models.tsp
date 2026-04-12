@@ -55,6 +55,16 @@ model EventType {
   durationMinutes: int32;
 }
 
+model OwnerEventType {
+  id: string;
+  title: string;
+  description?: string;
+  @minValue(1)
+  durationMinutes: int32;
+  isArchived: boolean;
+  hasBookings: boolean;
+}
+
 model AvailableSlot {
   startAt: utcDateTime;
   endAt: utcDateTime;
@@ -71,6 +81,13 @@ model Booking {
 }
 
 model CreateEventTypeRequest {
+  title: string;
+  description?: string;
+  @minValue(1)
+  durationMinutes: int32;
+}
+
+model UpdateEventTypeRequest {
   title: string;
   description?: string;
   @minValue(1)
@@ -99,6 +116,22 @@ model EventTypeListResponse {
 
   @body
   body: EventType[];
+}
+
+model OwnerEventTypeListResponse {
+  @statusCode
+  statusCode: 200;
+
+  @body
+  body: OwnerEventType[];
+}
+
+model OwnerEventTypeResponse {
+  @statusCode
+  statusCode: 200;
+
+  @body
+  body: OwnerEventType;
 }
 
 model AvailabilityResponse {
@@ -131,4 +164,9 @@ model BookingResponse {
 
   @body
   body: Booking;
+}
+
+model NoContentResponse {
+  @statusCode
+  statusCode: 204;
 }

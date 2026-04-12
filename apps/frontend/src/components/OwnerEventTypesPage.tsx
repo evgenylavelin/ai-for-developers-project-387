@@ -1,20 +1,27 @@
 import { useEffect, useRef, useState } from "react";
 
 import {
-  archiveOwnerEventType,
   buildOwnerEventTypeForm,
+  buildOwnerEventTypeInput,
   createEmptyOwnerEventTypeForm,
-  deleteOwnerEventType,
-  saveOwnerEventType,
   validateOwnerEventTypeForm,
 } from "../lib/ownerEventTypes";
-import type { OwnerEventType, OwnerEventTypeForm, Workspace } from "../types";
+import type { OwnerEventType, OwnerEventTypeForm, OwnerEventTypeInput, Workspace } from "../types";
 import { OwnerWorkspaceNav } from "./OwnerWorkspaceNav";
 
 type OwnerEventTypesPageProps = {
-  initialEventTypes: OwnerEventType[];
+  eventTypes: OwnerEventType[];
   workspace: Workspace;
   onChangeWorkspace: (workspace: Workspace) => void;
+  loadError?: string;
+  onRetryLoad?: () => void;
+  onCreateEventType: (input: OwnerEventTypeInput) => Promise<OwnerEventType | null>;
+  onUpdateEventType: (
+    eventTypeId: string,
+    input: OwnerEventTypeInput,
+  ) => Promise<OwnerEventType | null>;
+  onArchiveEventType: (eventTypeId: string) => Promise<OwnerEventType | null>;
+  onDeleteEventType: (eventTypeId: string) => Promise<OwnerEventType[]>;
 };
 
 type PendingAction = "delete" | "archive" | null;
@@ -50,44 +57,57 @@ function getValidationErrorField(error: string): keyof OwnerEventTypeForm | null
 }
 
 export function OwnerEventTypesPage({
-  initialEventTypes,
+  eventTypes,
   workspace,
   onChangeWorkspace,
+  loadError,
+  onRetryLoad,
+  onCreateEventType,
+  onUpdateEventType,
+  onArchiveEventType,
+  onDeleteEventType,
 }: OwnerEventTypesPageProps) {
-  const [eventTypes, setEventTypes] = useState(initialEventTypes);
-  const [selectedEventTypeId, setSelectedEventTypeId] = useState<string | null>(
-    initialEventTypes[0]?.id ?? null,
-  );
+  const [selectedEventTypeId, setSelectedEventTypeId] = useState<string | null>(eventTypes[0]?.id ?? null);
   const [form, setForm] = useState<OwnerEventTypeForm>(
-    initialEventTypes[0]
-      ? buildOwnerEventTypeForm(initialEventTypes[0])
+    eventTypes[0]
+      ? buildOwnerEventTypeForm(eventTypes[0])
       : createEmptyOwnerEventTypeForm(),
   );
-  const [mode, setMode] = useState<"create" | "edit">(initialEventTypes[0] ? "edit" : "create");
+  const [mode, setMode] = useState<"create" | "edit">(eventTypes[0] ? "edit" : "create");
   const [error, setError] = useState("");
   const [feedback, setFeedback] = useState("");
   const [pendingAction, setPendingAction] = useState<PendingAction>(null);
+  const [submitting, setSubmitting] = useState(false);
   const cancelActionButtonRef = useRef<HTMLButtonElement | null>(null);
   const errorField = getValidationErrorField(error);
 
   useEffect(() => {
-    setEventTypes(initialEventTypes);
-    setSelectedEventTypeId(initialEventTypes[0]?.id ?? null);
-    setForm(
-      initialEventTypes[0]
-        ? buildOwnerEventTypeForm(initialEventTypes[0])
-        : createEmptyOwnerEventTypeForm(),
-    );
-    setMode(initialEventTypes[0] ? "edit" : "create");
-    setError("");
-    setFeedback("");
+    if (eventTypes.length === 0) {
+      setSelectedEventTypeId(null);
+      setForm(createEmptyOwnerEventTypeForm());
+      setMode("create");
+      setPendingAction(null);
+      return;
+    }
+
+    const nextSelectedEventType =
+      (selectedEventTypeId ? eventTypes.find((eventType) => eventType.id === selectedEventTypeId) : null) ??
+      eventTypes[0];
+
+    setSelectedEventTypeId(nextSelectedEventType.id);
+    setForm(buildOwnerEventTypeForm(nextSelectedEventType));
+    setMode("edit");
     setPendingAction(null);
-  }, [initialEventTypes]);
+  }, [eventTypes]);
 
   const selectedEventType =
     mode === "edit" ? eventTypes.find((eventType) => eventType.id === selectedEventTypeId) ?? null : null;
 
   const openCreateMode = () => {
+    if (submitting) {
+      return;
+    }
+
     setMode("create");
     setSelectedEventTypeId(null);
     setForm(createEmptyOwnerEventTypeForm());
@@ -97,6 +117,10 @@ export function OwnerEventTypesPage({
   };
 
   const selectEventType = (eventType: OwnerEventType) => {
+    if (submitting) {
+      return;
+    }
+
     setMode("edit");
     setSelectedEventTypeId(eventType.id);
     setForm(buildOwnerEventTypeForm(eventType));
@@ -106,12 +130,20 @@ export function OwnerEventTypesPage({
   };
 
   const handleFieldChange = (field: keyof OwnerEventTypeForm, value: string) => {
+    if (submitting) {
+      return;
+    }
+
     setForm((currentForm) => ({ ...currentForm, [field]: value }));
     setError("");
     setFeedback("");
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    if (submitting) {
+      return;
+    }
+
     const validationError = validateOwnerEventTypeForm(form);
 
     if (validationError) {
@@ -120,68 +152,91 @@ export function OwnerEventTypesPage({
       return;
     }
 
-    const result = saveOwnerEventType(eventTypes, form, mode === "edit" ? selectedEventTypeId : null);
-    const nextSelectedEventType =
-      result.eventTypes.find((eventType) => eventType.id === result.selectedEventTypeId) ?? null;
-
-    setEventTypes(result.eventTypes);
-    setMode("edit");
-    setSelectedEventTypeId(result.selectedEventTypeId);
-    setForm(
-      nextSelectedEventType
-        ? buildOwnerEventTypeForm(nextSelectedEventType)
-        : createEmptyOwnerEventTypeForm(),
-    );
+    setSubmitting(true);
     setPendingAction(null);
     setError("");
-    setFeedback(
-      mode === "create"
-        ? "Новый тип события добавлен в локальный список."
-        : "Изменения сохранены в локальном mock-состоянии.",
-    );
-  };
+    setFeedback("");
 
-  const handleDeleteConfirm = () => {
-    if (!selectedEventType || selectedEventType.hasBookings) {
-      return;
-    }
+    try {
+      const input = buildOwnerEventTypeInput(form);
+      const savedEventType =
+        mode === "create"
+          ? await onCreateEventType(input)
+          : await onUpdateEventType(selectedEventTypeId ?? "", input);
 
-    const nextEventTypes = deleteOwnerEventType(eventTypes, selectedEventType.id);
-    const nextSelectedEventType = nextEventTypes[0] ?? null;
+      if (!savedEventType) {
+        throw new Error("Не удалось сохранить тип события.");
+      }
 
-    setEventTypes(nextEventTypes);
-    setPendingAction(null);
-    setError("");
-    setFeedback("Тип события удален из локального списка.");
-
-    if (nextSelectedEventType) {
       setMode("edit");
-      setSelectedEventTypeId(nextSelectedEventType.id);
-      setForm(buildOwnerEventTypeForm(nextSelectedEventType));
-      return;
+      setSelectedEventTypeId(savedEventType.id);
+      setForm(buildOwnerEventTypeForm(savedEventType));
+      setFeedback(mode === "create" ? "Тип события создан." : "Изменения сохранены.");
+    } catch (saveError) {
+      setError(saveError instanceof Error ? saveError.message : "Не удалось сохранить тип события.");
+    } finally {
+      setSubmitting(false);
     }
-
-    setMode("create");
-    setSelectedEventTypeId(null);
-    setForm(createEmptyOwnerEventTypeForm());
   };
 
-  const handleArchiveConfirm = () => {
-    if (!selectedEventType || selectedEventType.isArchived) {
+  const handleDeleteConfirm = async () => {
+    if (!selectedEventType || selectedEventType.hasBookings || submitting) {
       return;
     }
 
-    const nextEventTypes = archiveOwnerEventType(eventTypes, selectedEventType.id);
-    const nextSelectedEventType =
-      nextEventTypes.find((eventType) => eventType.id === selectedEventType.id) ?? null;
-
-    setEventTypes(nextEventTypes);
+    setSubmitting(true);
     setPendingAction(null);
     setError("");
-    setFeedback("Тип события переведен в архив в локальном mock-состоянии.");
+    setFeedback("");
 
-    if (nextSelectedEventType) {
-      setForm(buildOwnerEventTypeForm(nextSelectedEventType));
+    try {
+      const nextEventTypes = await onDeleteEventType(selectedEventType.id);
+      const nextSelectedEventType = nextEventTypes[0] ?? null;
+
+      setFeedback("Тип события удален.");
+
+      if (nextSelectedEventType) {
+        setMode("edit");
+        setSelectedEventTypeId(nextSelectedEventType.id);
+        setForm(buildOwnerEventTypeForm(nextSelectedEventType));
+      } else {
+        setMode("create");
+        setSelectedEventTypeId(null);
+        setForm(createEmptyOwnerEventTypeForm());
+      }
+    } catch (deleteError) {
+      setError(deleteError instanceof Error ? deleteError.message : "Не удалось удалить тип события.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleArchiveConfirm = async () => {
+    if (!selectedEventType || selectedEventType.isArchived || submitting) {
+      return;
+    }
+
+    setSubmitting(true);
+    setPendingAction(null);
+    setError("");
+    setFeedback("");
+
+    try {
+      const archivedEventType = await onArchiveEventType(selectedEventType.id);
+
+      if (!archivedEventType) {
+        throw new Error("Не удалось архивировать тип события.");
+      }
+
+      setSelectedEventTypeId(archivedEventType.id);
+      setForm(buildOwnerEventTypeForm(archivedEventType));
+      setFeedback("Тип события переведен в архив.");
+    } catch (archiveError) {
+      setError(
+        archiveError instanceof Error ? archiveError.message : "Не удалось архивировать тип события.",
+      );
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -230,8 +285,8 @@ export function OwnerEventTypesPage({
               <p className="eyebrow">Owner Workspace</p>
               <h1>Управление типами событий</h1>
               <p className="panel-copy owner-hero__copy">
-                Локальная административная зона для настройки карточек встреч. В этой версии CRUD
-                работает только в mock-состоянии внутри frontend-приложения.
+                Настраивайте карточки встреч через backend-источник данных. Изменения сразу
+                синхронизируются с owner workspace и публичным списком доступных типов.
               </p>
             </div>
             <OwnerWorkspaceNav
@@ -260,19 +315,35 @@ export function OwnerEventTypesPage({
                 <p className="bookings-card__eyebrow">Список</p>
                 <h2 id="owner-event-types-title">Типы событий</h2>
               </div>
-              <button type="button" className="secondary-button" onClick={openCreateMode}>
+              <button type="button" className="secondary-button" onClick={openCreateMode} disabled={submitting}>
                 + Создать тип события
               </button>
             </div>
 
-            {eventTypes.length === 0 ? (
+            {loadError ? (
+              <div className="owner-empty-state">
+                <p className="error-copy" role="alert">
+                  {loadError}
+                </p>
+                {onRetryLoad ? (
+                  <button
+                    type="button"
+                    className="secondary-button"
+                    onClick={onRetryLoad}
+                    disabled={submitting}
+                  >
+                    Повторить загрузку
+                  </button>
+                ) : null}
+              </div>
+            ) : eventTypes.length === 0 ? (
               <div className="owner-empty-state">
                 <p className="owner-empty-state__title">Типов событий пока нет.</p>
                 <p className="empty-copy">
                   Создайте первый тип события, чтобы подготовить owner workspace к будущей
                   публикации слотов.
                 </p>
-                <button type="button" className="primary-button" onClick={openCreateMode}>
+                <button type="button" className="primary-button" onClick={openCreateMode} disabled={submitting}>
                   Создать первый тип
                 </button>
               </div>
@@ -287,6 +358,7 @@ export function OwnerEventTypesPage({
                         type="button"
                         className={`owner-event-type-card${selected ? " owner-event-type-card--selected" : ""}`}
                         aria-pressed={selected}
+                        disabled={submitting}
                         onClick={() => selectEventType(eventType)}
                       >
                         <span className="owner-event-type-card__title">{eventType.title}</span>
@@ -347,7 +419,7 @@ export function OwnerEventTypesPage({
 
             {selectedEventType?.isArchived ? (
               <p className="owner-archive-banner">
-                Этот тип находится в архиве. Форма остается доступной для просмотра и локального
+                Этот тип находится в архиве. Форма остается доступной для просмотра и
                 редактирования.
               </p>
             ) : null}
@@ -359,6 +431,7 @@ export function OwnerEventTypesPage({
                   type="text"
                   name="title"
                   value={form.title}
+                  disabled={submitting}
                   aria-invalid={errorField === "title"}
                   aria-describedby={errorField === "title" ? "owner-event-type-form-error" : undefined}
                   onChange={(event) => handleFieldChange("title", event.target.value)}
@@ -371,6 +444,7 @@ export function OwnerEventTypesPage({
                   name="description"
                   rows={4}
                   value={form.description}
+                  disabled={submitting}
                   aria-invalid={errorField === "description"}
                   aria-describedby={
                     errorField === "description" ? "owner-event-type-form-error" : undefined
@@ -387,6 +461,7 @@ export function OwnerEventTypesPage({
                   step="5"
                   name="durationMinutes"
                   value={form.durationMinutes}
+                  disabled={submitting}
                   aria-invalid={errorField === "durationMinutes"}
                   aria-describedby={
                     errorField === "durationMinutes" ? "owner-event-type-form-error" : undefined
@@ -420,8 +495,8 @@ export function OwnerEventTypesPage({
             ) : null}
 
             <div className="owner-form-actions">
-              <button type="button" className="primary-button" onClick={handleSave}>
-                Сохранить
+              <button type="button" className="primary-button" onClick={() => void handleSave()} disabled={submitting}>
+                {submitting ? "Сохраняем..." : "Сохранить"}
               </button>
 
               {mode === "edit" && selectedEventType ? (
@@ -430,6 +505,7 @@ export function OwnerEventTypesPage({
                     <button
                       type="button"
                       className="danger-button"
+                      disabled={submitting}
                       onClick={() => setPendingAction("delete")}
                     >
                       Удалить
@@ -438,6 +514,7 @@ export function OwnerEventTypesPage({
                     <button
                       type="button"
                       className="secondary-button"
+                      disabled={submitting}
                       onClick={() => setPendingAction("archive")}
                     >
                       Архивировать
@@ -475,6 +552,7 @@ export function OwnerEventTypesPage({
                 type="button"
                 className="secondary-button"
                 onClick={() => setPendingAction(null)}
+                disabled={submitting}
                 ref={cancelActionButtonRef}
               >
                 Отмена
@@ -482,7 +560,8 @@ export function OwnerEventTypesPage({
               <button
                 type="button"
                 className={confirmationDialog.confirmClassName}
-                onClick={confirmationDialog.onConfirm}
+                onClick={() => void confirmationDialog.onConfirm()}
+                disabled={submitting}
               >
                 {confirmationDialog.confirmLabel}
               </button>

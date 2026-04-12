@@ -2,16 +2,17 @@ import { useEffect, useState } from "react";
 
 import {
   ALL_EVENT_TYPES_FILTER,
-  buildAvailableDatesByEventType,
   buildCalendarDaySummaries,
   listBookingsForDate,
 } from "../lib/publicBookings";
-import type { Booking, EventType, ScheduleDay, Workspace } from "../types";
+import type { CalendarDay } from "../lib/publicCalendar";
+import type { AvailableDatesByEventType, Booking, EventType, Workspace } from "../types";
 
 type PublicBookingsHomeProps = {
   bookings: Booking[];
   eventTypes: EventType[];
-  schedule: ScheduleDay[];
+  availableDatesByEventType: AvailableDatesByEventType;
+  calendarDays: CalendarDay[];
   initialSelectedDate?: string;
   workspace: Workspace;
   onChangeWorkspace: (workspace: Workspace) => void;
@@ -30,7 +31,8 @@ function formatDuration(durationMinutes: number): string {
 export function PublicBookingsHome({
   bookings,
   eventTypes,
-  schedule,
+  availableDatesByEventType,
+  calendarDays,
   initialSelectedDate,
   workspace,
   onChangeWorkspace,
@@ -38,22 +40,21 @@ export function PublicBookingsHome({
   onStartBooking,
 }: PublicBookingsHomeProps) {
   const [selectedFilterId, setSelectedFilterId] = useState(ALL_EVENT_TYPES_FILTER);
-  const [selectedDate, setSelectedDate] = useState(initialSelectedDate ?? schedule[0]?.isoDate ?? "");
+  const [selectedDate, setSelectedDate] = useState(initialSelectedDate ?? calendarDays[0]?.isoDate ?? "");
 
   useEffect(() => {
     const nextSelectedDate =
-      initialSelectedDate && schedule.some((day) => day.isoDate === initialSelectedDate)
+      initialSelectedDate && calendarDays.some((day) => day.isoDate === initialSelectedDate)
         ? initialSelectedDate
-        : schedule[0]?.isoDate ?? "";
+        : calendarDays[0]?.isoDate ?? "";
 
     setSelectedDate((currentDate) =>
-      schedule.some((day) => day.isoDate === currentDate) ? currentDate : nextSelectedDate,
+      calendarDays.some((day) => day.isoDate === currentDate) ? currentDate : nextSelectedDate,
     );
-  }, [initialSelectedDate, schedule]);
+  }, [calendarDays, initialSelectedDate]);
 
-  const availableDatesByEventType = buildAvailableDatesByEventType(schedule, eventTypes, bookings);
   const daySummaries = buildCalendarDaySummaries(
-    schedule,
+    calendarDays,
     bookings,
     availableDatesByEventType,
     selectedFilterId,

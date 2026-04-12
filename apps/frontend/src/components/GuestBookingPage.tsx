@@ -20,7 +20,7 @@ type GuestBookingPageProps = {
   datesByEventType: AvailableDatesByEventType;
   initialSelectedDate?: string;
   successActionLabel?: string;
-  onBookingSubmit?: (draft: BookingDraft) => void;
+  onBookingSubmit?: (draft: BookingDraft) => Promise<void>;
   onSuccessAction?: () => void;
 };
 
@@ -58,6 +58,7 @@ export function GuestBookingPage({
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [submissionError, setSubmissionError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [successSummary, setSuccessSummary] = useState("");
 
   useEffect(() => {
@@ -146,6 +147,7 @@ export function GuestBookingPage({
     setEmail("");
     setSuccessSummary("");
     setSubmissionError("");
+    setIsSubmitting(false);
     setCurrentScreen(startsWithEventType ? "event-type" : "date-time");
   };
 
@@ -185,7 +187,7 @@ export function GuestBookingPage({
         ? "Выберите свободный слот на ближайшие 14 дней."
         : "Укажите имя и email для подтверждения бронирования.";
 
-  const submit = () => {
+  const submit = async () => {
     const trimmedName = name.trim();
     const trimmedEmail = email.trim();
 
@@ -194,22 +196,34 @@ export function GuestBookingPage({
       return;
     }
 
-    setSubmissionError("");
-    setSuccessSummary(
-      formatSummary({
-        eventTypeTitle: selectedEventType.title,
-        fullDateLabel: activeDate?.fullLabel,
-        timeLabel: selectedTime,
-      }),
-    );
-    onBookingSubmit?.({
+    const draft = {
       eventTypeId: selectedEventType.id,
       isoDate: selectedDate,
       time: selectedTime,
       guestName: trimmedName,
       guestEmail: trimmedEmail,
-    });
-    setCurrentScreen("success");
+    };
+
+    setSubmissionError("");
+    setIsSubmitting(true);
+
+    try {
+      await onBookingSubmit?.(draft);
+      setSuccessSummary(
+        formatSummary({
+          eventTypeTitle: selectedEventType.title,
+          fullDateLabel: activeDate?.fullLabel,
+          timeLabel: selectedTime,
+        }),
+      );
+      setCurrentScreen("success");
+    } catch (error) {
+      setSubmissionError(
+        error instanceof Error ? error.message : "Не удалось создать бронирование.",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -286,8 +300,8 @@ export function GuestBookingPage({
           <span />
         )}
         {currentScreen === "contacts" ? (
-          <button type="button" className="primary-button" onClick={submit}>
-            Подтвердить
+          <button type="button" className="primary-button" disabled={isSubmitting} onClick={() => void submit()}>
+            {isSubmitting ? "Сохраняем..." : "Подтвердить"}
           </button>
         ) : (
           <button

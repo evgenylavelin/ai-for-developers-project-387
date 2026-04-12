@@ -3,17 +3,16 @@ import { describe, expect, it } from "vitest";
 import { bookingSchedule, multiEventTypes, publicBookings } from "../data/mockGuestFlow";
 import {
   ALL_EVENT_TYPES_FILTER,
-  buildAvailableDatesByEventType,
+  buildAvailableDatesFromSchedule,
   buildCalendarDaySummaries,
   cancelPublicBooking,
-  createMockBooking,
   getInitialSelectedDate,
   listBookingsForDate,
 } from "./publicBookings";
 
-describe("buildAvailableDatesByEventType", () => {
+describe("buildAvailableDatesFromSchedule", () => {
   it("removes active booking slots from event-type availability", () => {
-    const datesByEventType = buildAvailableDatesByEventType(
+    const datesByEventType = buildAvailableDatesFromSchedule(
       bookingSchedule,
       multiEventTypes,
       publicBookings,
@@ -24,7 +23,7 @@ describe("buildAvailableDatesByEventType", () => {
   });
 
   it("keeps cancelled booking slots available", () => {
-    const datesByEventType = buildAvailableDatesByEventType(
+    const datesByEventType = buildAvailableDatesFromSchedule(
       bookingSchedule,
       multiEventTypes,
       publicBookings,
@@ -36,7 +35,7 @@ describe("buildAvailableDatesByEventType", () => {
 
 describe("buildCalendarDaySummaries", () => {
   it("shows only booked counts in all mode", () => {
-    const datesByEventType = buildAvailableDatesByEventType(
+    const datesByEventType = buildAvailableDatesFromSchedule(
       bookingSchedule,
       multiEventTypes,
       publicBookings,
@@ -57,7 +56,7 @@ describe("buildCalendarDaySummaries", () => {
   });
 
   it("shows booked and free counts for a specific event type", () => {
-    const datesByEventType = buildAvailableDatesByEventType(
+    const datesByEventType = buildAvailableDatesFromSchedule(
       bookingSchedule,
       multiEventTypes,
       publicBookings,
@@ -91,24 +90,5 @@ describe("cancelPublicBooking", () => {
 
     expect(nextBookings[0].status).toBe("cancelled");
     expect(nextBookings).toHaveLength(publicBookings.length);
-  });
-});
-
-describe("createMockBooking", () => {
-  it("creates an active booking with an end time derived from the event type duration", () => {
-    expect(
-      createMockBooking(multiEventTypes, {
-        eventTypeId: "standard",
-        isoDate: "2026-04-18",
-        time: "10:00",
-        guestName: "Мария",
-        guestEmail: "maria@example.com",
-      }),
-    ).toMatchObject({
-      id: "booking-standard-2026-04-18-10:00",
-      startAt: "2026-04-18T10:00:00Z",
-      endAt: "2026-04-18T10:30:00Z",
-      status: "active",
-    });
   });
 });

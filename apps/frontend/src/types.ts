@@ -2,13 +2,13 @@ export type EventType = {
   id: string;
   title: string;
   durationMinutes: number;
-  note?: string;
+  description?: string;
 };
 
 export type OwnerEventType = {
   id: string;
   title: string;
-  description: string;
+  description?: string;
   durationMinutes: number;
   isArchived: boolean;
   hasBookings: boolean;
@@ -18,6 +18,12 @@ export type OwnerEventTypeForm = {
   title: string;
   description: string;
   durationMinutes: string;
+};
+
+export type OwnerEventTypeInput = {
+  title: string;
+  description?: string;
+  durationMinutes: number;
 };
 
 export type DayOfWeek =
@@ -72,6 +78,21 @@ export type BookingDraft = {
   guestName: string;
   guestEmail: string;
 };
+
+export type CreateBookingRequest = {
+  eventTypeId: string;
+  startAt: string;
+  endAt: string;
+  guestName: string;
+  guestEmail: string;
+};
+
+export type AvailabilitySlot = {
+  startAt: string;
+  endAt: string;
+};
+
+export type AvailabilityByEventType = Record<string, AvailabilitySlot[]>;
 
 export type AvailableDatesByEventType = Record<string, SlotDate[]>;
 

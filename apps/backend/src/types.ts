@@ -20,6 +20,18 @@ export type EventType = {
   durationMinutes: number;
 };
 
+export type StoredEventType = {
+  id: string;
+  title: string;
+  description?: string;
+  durationMinutes: number;
+  isArchived: boolean;
+};
+
+export type OwnerEventType = StoredEventType & {
+  hasBookings: boolean;
+};
+
 export type BookingStatus = "active" | "cancelled";
 
 export type Booking = {

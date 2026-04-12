@@ -7,7 +7,7 @@ import {
   noEventTypes,
   singleEventType,
 } from "../data/mockGuestFlow";
-import { buildAvailableDatesByEventType } from "./publicBookings";
+import { buildAvailableDatesFromSchedule } from "./publicBookings";
 
 describe("deriveEntryState", () => {
   it("returns unavailable for zero event types", () => {
@@ -90,7 +90,7 @@ describe("mock guest flow fixtures", () => {
   });
 
   it("exposes schedule days and derived direct-booking slots", () => {
-    const datesByEventType = buildAvailableDatesByEventType(bookingSchedule, singleEventType, []);
+    const datesByEventType = buildAvailableDatesFromSchedule(bookingSchedule, singleEventType, []);
 
     expect(bookingSchedule).toHaveLength(5);
     expect(datesByEventType.standard[0]).toMatchObject({
