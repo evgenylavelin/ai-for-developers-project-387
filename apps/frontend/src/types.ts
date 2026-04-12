@@ -5,6 +5,21 @@ export type EventType = {
   note?: string;
 };
 
+export type OwnerEventType = {
+  id: string;
+  title: string;
+  description: string;
+  durationMinutes: number;
+  isArchived: boolean;
+  hasBookings: boolean;
+};
+
+export type OwnerEventTypeForm = {
+  title: string;
+  description: string;
+  durationMinutes: string;
+};
+
 export type ScheduleDay = {
   isoDate: string;
   weekdayShort: string;

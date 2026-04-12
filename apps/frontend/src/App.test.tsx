@@ -356,4 +356,123 @@ describe("App", () => {
       "choice-card--selected",
     );
   });
+
+  it("navigates from public bookings to the owner workspace and back", async () => {
+    const user = userEvent.setup();
+
+    render(<App scenario="public" />);
+
+    expect(screen.getByRole("heading", { name: "Бронирования" })).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Управление типами событий" }));
+
+    expect(screen.getByRole("heading", { name: "Управление типами событий" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Редактирование типа события" })).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Публичные бронирования" }));
+
+    expect(screen.getByRole("heading", { name: "Бронирования" })).toBeInTheDocument();
+  });
+
+  it('opens create mode from "+ Создать тип события" with empty fields and no destructive actions', async () => {
+    const user = userEvent.setup();
+
+    render(<App scenario="public" />);
+
+    await user.click(screen.getByRole("button", { name: "Управление типами событий" }));
+    await user.click(screen.getByRole("button", { name: "+ Создать тип события" }));
+
+    expect(screen.getByRole("heading", { name: "Новый тип события" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Название")).toHaveValue("");
+    expect(screen.getByLabelText("Описание")).toHaveValue("");
+    expect(screen.getByLabelText("Длительность")).toHaveValue(null);
+    expect(screen.queryByRole("button", { name: "Удалить" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Архивировать" })).not.toBeInTheDocument();
+    expect(screen.queryByText(/Подтвердить удаление|Подтвердить архивирование/)).not.toBeInTheDocument();
+  });
+
+  it("saves a new owner event type into the local list state", async () => {
+    const user = userEvent.setup();
+
+    render(<App scenario="public" />);
+
+    await user.click(screen.getByRole("button", { name: "Управление типами событий" }));
+    await user.click(screen.getByRole("button", { name: "+ Создать тип события" }));
+    await user.type(screen.getByLabelText("Название"), "Новая диагностика");
+    await user.type(
+      screen.getByLabelText("Описание"),
+      "Проверка текущего состояния и следующих шагов.",
+    );
+    await user.type(screen.getByLabelText("Длительность"), "35");
+    await user.click(screen.getByRole("button", { name: "Сохранить" }));
+
+    expect(screen.getByText("Новый тип события добавлен в локальный список.")).toBeInTheDocument();
+
+    const eventTypesList = screen.getByRole("list", { name: "Список типов событий" });
+    const createdEventType = within(eventTypesList).getByRole("button", { name: /Новая диагностика/i });
+
+    expect(createdEventType).toBeInTheDocument();
+    expect(within(createdEventType).getByText("35 мин")).toBeInTheDocument();
+    expect(within(createdEventType).getByText("Активен")).toBeInTheDocument();
+  });
+
+  it("deletes an unused owner event type after confirmation", async () => {
+    const user = userEvent.setup();
+
+    render(<App scenario="public" />);
+
+    await user.click(screen.getByRole("button", { name: "Управление типами событий" }));
+    await user.click(screen.getByRole("button", { name: /Короткий созвон/i }));
+    await user.click(screen.getByRole("button", { name: "Удалить" }));
+
+    expect(
+      screen.getByText("Удалить тип события? Он исчезнет из owner workspace и будущих вариантов записи."),
+    ).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Подтвердить удаление" }));
+
+    expect(screen.getByText("Тип события удален из локального списка.")).toBeInTheDocument();
+    expect(
+      within(screen.getByRole("list", { name: "Список типов событий" })).queryByRole("button", {
+        name: /Короткий созвон/i,
+      }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("shows archive-only controls for a used type and archives it after confirmation", async () => {
+    const user = userEvent.setup();
+
+    render(<App scenario="public" />);
+
+    await user.click(screen.getByRole("button", { name: "Управление типами событий" }));
+
+    const selectedEventType = within(
+      screen.getByRole("list", { name: "Список типов событий" }),
+    ).getByRole("button", { name: /Стратегическая сессия/i });
+
+    expect(
+      screen.getByText("Тип уже использовался в бронированиях. Его можно только архивировать."),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Удалить" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Архивировать" })).toBeInTheDocument();
+    expect(within(selectedEventType).getByText("Использовался в бронированиях")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Архивировать" }));
+
+    expect(
+      screen.getByText("Перевести тип в архив? Он останется видимым в owner списке для истории бронирований."),
+    ).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Подтвердить архивирование" }));
+
+    expect(
+      screen.getByText("Тип события переведен в архив в локальном mock-состоянии."),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("Этот тип находится в архиве. Форма остается доступной для просмотра и локального редактирования."),
+    ).toBeInTheDocument();
+
+    expect(within(selectedEventType).getByText("Архив")).toBeInTheDocument();
+    expect(within(selectedEventType).getByText("Использовался в бронированиях")).toBeInTheDocument();
+  });
 });

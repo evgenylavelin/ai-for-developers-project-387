@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
 import { GuestBookingPage } from "./components/GuestBookingPage";
+import { OwnerEventTypesPage } from "./components/OwnerEventTypesPage";
 import { PublicBookingsHome } from "./components/PublicBookingsHome";
 import {
   bookingSchedule,
@@ -9,6 +10,7 @@ import {
   publicBookings,
   singleEventType,
 } from "./data/mockGuestFlow";
+import { mockOwnerEventTypes } from "./data/mockOwnerEventTypes";
 import {
   buildAvailableDatesByEventType,
   cancelPublicBooking,
@@ -61,6 +63,7 @@ function getScenarioData(scenario: NonNullable<AppProps["scenario"]>): ScenarioD
 
 export default function App({ scenario = "public" }: AppProps) {
   const scenarioData = getScenarioData(scenario);
+  const [workspace, setWorkspace] = useState<"public" | "owner">("public");
   const [bookings, setBookings] = useState(scenarioData.bookings);
   const [screen, setScreen] = useState<"home" | "booking">(
     scenarioData.bookings.length > 0 ? "home" : "booking",
@@ -75,6 +78,7 @@ export default function App({ scenario = "public" }: AppProps) {
   useEffect(() => {
     const nextScenarioData = getScenarioData(scenario);
 
+    setWorkspace("public");
     setBookings(nextScenarioData.bookings);
     setScreen(nextScenarioData.bookings.length > 0 ? "home" : "booking");
     setSuccessDestination(nextScenarioData.bookings.length > 0 ? "home" : "restart");
@@ -88,45 +92,74 @@ export default function App({ scenario = "public" }: AppProps) {
   );
 
   return (
-    <main className={`app-shell${screen === "home" ? " app-shell--top" : ""}`}>
-      {screen === "home" ? (
-        <PublicBookingsHome
-          bookings={bookings}
-          eventTypes={scenarioData.eventTypes}
-          initialSelectedDate={selectedHomeDate}
-          schedule={scenarioData.schedule}
-          onCancelBooking={(bookingId) => {
-            setBookings((currentBookings) => cancelPublicBooking(currentBookings, bookingId));
-          }}
-          onStartBooking={(isoDate) => {
-            setSelectedHomeDate(isoDate);
-            setSuccessDestination("home");
-            setScreen("booking");
-          }}
-        />
-      ) : (
-        <GuestBookingPage
-          eventTypes={scenarioData.eventTypes}
-          datesByEventType={datesByEventType}
-          initialSelectedDate={selectedHomeDate}
-          successActionLabel={
-            successDestination === "home" ? "Вернуться к бронированиям" : undefined
-          }
-          onBookingSubmit={(draft) => {
-            setBookings((currentBookings) => [
-              ...currentBookings,
-              createMockBooking(scenarioData.eventTypes, draft),
-            ]);
-          }}
-          onSuccessAction={
-            successDestination === "home"
-              ? () => {
-                  setScreen("home");
+    <main className="app-shell app-shell--top">
+      <div className="workspace-shell">
+        <nav className="workspace-nav" aria-label="Разделы приложения">
+          <button
+            type="button"
+            className={`workspace-nav__link${workspace === "public" ? " workspace-nav__link--active" : ""}`}
+            aria-pressed={workspace === "public"}
+            onClick={() => setWorkspace("public")}
+          >
+            Публичные бронирования
+          </button>
+          <button
+            type="button"
+            className={`workspace-nav__link${workspace === "owner" ? " workspace-nav__link--active" : ""}`}
+            aria-pressed={workspace === "owner"}
+            onClick={() => setWorkspace("owner")}
+          >
+            Управление типами событий
+          </button>
+        </nav>
+
+        <div
+          className={`workspace-content${workspace === "public" && screen === "booking" ? " workspace-content--centered" : ""}`}
+        >
+          {workspace === "public" ? (
+            screen === "home" ? (
+              <PublicBookingsHome
+                bookings={bookings}
+                eventTypes={scenarioData.eventTypes}
+                initialSelectedDate={selectedHomeDate}
+                schedule={scenarioData.schedule}
+                onCancelBooking={(bookingId) => {
+                  setBookings((currentBookings) => cancelPublicBooking(currentBookings, bookingId));
+                }}
+                onStartBooking={(isoDate) => {
+                  setSelectedHomeDate(isoDate);
+                  setSuccessDestination("home");
+                  setScreen("booking");
+                }}
+              />
+            ) : (
+              <GuestBookingPage
+                eventTypes={scenarioData.eventTypes}
+                datesByEventType={datesByEventType}
+                initialSelectedDate={selectedHomeDate}
+                successActionLabel={
+                  successDestination === "home" ? "Вернуться к бронированиям" : undefined
                 }
-              : undefined
-          }
-        />
-      )}
+                onBookingSubmit={(draft) => {
+                  setBookings((currentBookings) => [
+                    ...currentBookings,
+                    createMockBooking(scenarioData.eventTypes, draft),
+                  ]);
+                }}
+                onSuccessAction={
+                  successDestination === "home"
+                    ? () => {
+                        setScreen("home");
+                      }
+                    : undefined
+                }
+              />
+            )
+          ) : (
+            <OwnerEventTypesPage key={scenario} initialEventTypes={mockOwnerEventTypes} />
+          )}
+        </div>
+      </div>
     </main>
   );
 }
