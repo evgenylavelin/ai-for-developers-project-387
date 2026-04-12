@@ -126,6 +126,14 @@ npm run spec:format
 npm run frontend:dev
 ```
 
+Одновременный запуск backend и frontend:
+
+```bash
+make dev
+```
+
+При необходимости можно запускать части отдельно через `make frontend` и `make backend`.
+
 В режиме разработки frontend проксирует API-запросы `'/schedule'`, `'/event-types'`, `'/owner/event-types'` и `'/bookings'`
 на backend по адресу `http://localhost:3001`. Если backend запущен на другом адресе, задайте
 `VITE_API_BASE_URL`.
