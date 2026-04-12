@@ -45,6 +45,30 @@ type AppProps = {
   scenario?: AppScenario;
 };
 
+type PublicLoadErrors = {
+  bookings: string;
+  eventTypes: string;
+  availability: string;
+};
+
+type PublicLoadStatuses = {
+  bookings: "loading" | "ready" | "error";
+  eventTypes: "loading" | "ready" | "error";
+  availability: "idle" | "loading" | "ready" | "error";
+};
+
+const EMPTY_PUBLIC_LOAD_ERRORS: PublicLoadErrors = {
+  bookings: "",
+  eventTypes: "",
+  availability: "",
+};
+
+const INITIAL_PUBLIC_LOAD_STATUSES: PublicLoadStatuses = {
+  bookings: "loading",
+  eventTypes: "loading",
+  availability: "loading",
+};
+
 function toOwnerEventType(eventType: EventType): OwnerEventType {
   return {
     ...eventType,
@@ -94,12 +118,21 @@ export default function App({ scenario }: AppProps) {
     scenarioData ? buildScenarioAvailability(scenarioData.schedule, scenarioData.eventTypes) : {},
   );
   const [loading, setLoading] = useState(!scenarioData);
-  const [initialLoadError, setInitialLoadError] = useState("");
+  const [publicLoadErrors, setPublicLoadErrors] = useState<PublicLoadErrors>(EMPTY_PUBLIC_LOAD_ERRORS);
+  const [publicLoadStatuses, setPublicLoadStatuses] = useState<PublicLoadStatuses>(
+    scenarioData
+      ? {
+          bookings: "ready",
+          eventTypes: "ready",
+          availability: "ready",
+        }
+      : INITIAL_PUBLIC_LOAD_STATUSES,
+  );
   const [ownerEventTypesError, setOwnerEventTypesError] = useState("");
   const [actionError, setActionError] = useState("");
   const [reloadToken, setReloadToken] = useState(0);
   const [screen, setScreen] = useState<"home" | "booking">(
-    scenarioData?.bookings.length ? "home" : "booking",
+    scenarioData ? (scenarioData.bookings.length ? "home" : "booking") : "home",
   );
   const [successDestination, setSuccessDestination] = useState<"restart" | "home">(
     scenarioData?.bookings.length ? "home" : "restart",
@@ -123,7 +156,12 @@ export default function App({ scenario }: AppProps) {
       buildScenarioAvailability(nextScenarioData.schedule, nextScenarioData.eventTypes),
     );
     setLoading(false);
-    setInitialLoadError("");
+    setPublicLoadErrors(EMPTY_PUBLIC_LOAD_ERRORS);
+    setPublicLoadStatuses({
+      bookings: "ready",
+      eventTypes: "ready",
+      availability: "ready",
+    });
     setOwnerEventTypesError("");
     setActionError("");
     setScreen(nextScenarioData.bookings.length > 0 ? "home" : "booking");
@@ -140,19 +178,75 @@ export default function App({ scenario }: AppProps) {
 
     async function loadRemoteState() {
       setLoading(true);
-      setInitialLoadError("");
+      setPublicLoadStatuses({
+        bookings: "loading",
+        eventTypes: "loading",
+        availability: "loading",
+      });
+      setActionError("");
+
+      const nextErrors: PublicLoadErrors = {
+        bookings: "",
+        eventTypes: "",
+        availability: "",
+      };
+      const nextStatuses: PublicLoadStatuses = {
+        bookings: "loading",
+        eventTypes: "loading",
+        availability: "loading",
+      };
+      let loadedGuestEventTypes: EventType[] = [];
+      let loadedBookings: Booking[] = [];
+      let loadedAvailability: AvailabilityByEventType = {};
 
       try {
-        const [loadedGuestEventTypes, loadedBookings] = await Promise.all([
+        const [guestEventTypesResult, bookingsResult] = await Promise.allSettled([
           getGuestEventTypes(),
           listBookings(),
         ]);
 
-        const loadedAvailability = Object.fromEntries(
-          await Promise.all(
-            loadedGuestEventTypes.map(async (eventType) => [eventType.id, await getAvailability(eventType.id)]),
-          ),
-        ) as AvailabilityByEventType;
+        if (guestEventTypesResult.status === "fulfilled") {
+          loadedGuestEventTypes = guestEventTypesResult.value;
+          nextStatuses.eventTypes = "ready";
+        } else {
+          nextErrors.eventTypes =
+            guestEventTypesResult.reason instanceof Error
+              ? guestEventTypesResult.reason.message
+              : "Не удалось загрузить типы событий.";
+          nextStatuses.eventTypes = "error";
+          nextStatuses.availability = "idle";
+        }
+
+        if (bookingsResult.status === "fulfilled") {
+          loadedBookings = bookingsResult.value;
+          nextStatuses.bookings = "ready";
+        } else {
+          nextErrors.bookings =
+            bookingsResult.reason instanceof Error
+              ? bookingsResult.reason.message
+              : "Не удалось загрузить бронирования.";
+          nextStatuses.bookings = "error";
+        }
+
+        if (nextStatuses.eventTypes === "ready") {
+          try {
+            loadedAvailability = Object.fromEntries(
+              await Promise.all(
+                loadedGuestEventTypes.map(async (eventType) => [
+                  eventType.id,
+                  await getAvailability(eventType.id),
+                ]),
+              ),
+            ) as AvailabilityByEventType;
+            nextStatuses.availability = "ready";
+          } catch (error) {
+            nextErrors.availability =
+              error instanceof Error
+                ? error.message
+                : "Не удалось загрузить доступные слоты.";
+            nextStatuses.availability = "error";
+          }
+        }
 
         if (!alive) {
           return;
@@ -163,10 +257,11 @@ export default function App({ scenario }: AppProps) {
         setGuestEventTypes(loadedGuestEventTypes);
         setBookings(loadedBookings);
         setAvailabilityByEventType(loadedAvailability);
+        setPublicLoadErrors(nextErrors);
+        setPublicLoadStatuses(nextStatuses);
         setOwnerEventTypesError("");
-        setActionError("");
-        setScreen(loadedBookings.length > 0 ? "home" : "booking");
-        setSuccessDestination(loadedBookings.length > 0 ? "home" : "restart");
+        setScreen("home");
+        setSuccessDestination("home");
         setSelectedHomeDate(getInitialSelectedDate(remoteCalendarDays, loadedBookings));
 
         void getOwnerEventTypes()
@@ -190,14 +285,6 @@ export default function App({ scenario }: AppProps) {
                 : "Не удалось загрузить типы событий владельца.",
             );
           });
-      } catch (error) {
-        if (!alive) {
-          return;
-        }
-
-        setInitialLoadError(
-          error instanceof Error ? error.message : "Не удалось загрузить данные приложения.",
-        );
       } finally {
         if (alive) {
           setLoading(false);
@@ -220,6 +307,23 @@ export default function App({ scenario }: AppProps) {
   const datesByEventType = isScenarioMode
     ? buildAvailableDatesFromSchedule(schedule, guestEventTypes, bookings)
     : buildAvailableDatesFromAvailability(availabilityByEventType, calendarDays);
+  const publicStartupFailures = [
+    publicLoadErrors.bookings ? "бронирования" : "",
+    publicLoadErrors.eventTypes ? "типы событий" : "",
+    publicLoadErrors.availability ? "доступные слоты" : "",
+  ].filter(Boolean);
+  const publicStartupWarning = publicStartupFailures.length
+    ? `Проблемы с загрузкой: ${publicStartupFailures.join(", ")}.`
+    : "";
+  const bookingEntryDisabledReason = loading
+    ? "Запись станет доступна после загрузки типов событий и свободных слотов."
+    : publicLoadErrors.eventTypes
+      ? "Запись временно недоступна: не удалось загрузить типы событий."
+      : publicLoadErrors.availability
+        ? "Запись временно недоступна: не удалось загрузить доступные слоты."
+        : guestEventTypes.length === 0
+          ? "Запись пока недоступна: сейчас нет активных типов событий."
+          : "";
 
   const refreshBookings = async () => {
     const nextBookings = await listBookings();
@@ -419,43 +523,6 @@ export default function App({ scenario }: AppProps) {
     }
   };
 
-  if (!isScenarioMode && loading) {
-    return (
-      <main className="app-shell app-shell--top">
-        <div className="workspace-shell">
-          <section className="panel">
-            <p className="eyebrow">Call Planner</p>
-            <h1>Загружаем данные</h1>
-            <p className="panel-copy">Получаем типы событий, бронирования и доступные слоты.</p>
-          </section>
-        </div>
-      </main>
-    );
-  }
-
-  if (!isScenarioMode && initialLoadError) {
-    return (
-      <main className="app-shell app-shell--top">
-        <div className="workspace-shell">
-          <section className="panel">
-            <p className="eyebrow">Call Planner</p>
-            <h1>Не удалось загрузить данные</h1>
-            <p className="error-copy" role="alert">
-              {initialLoadError}
-            </p>
-            <button
-              type="button"
-              className="primary-button"
-              onClick={() => setReloadToken((currentToken) => currentToken + 1)}
-            >
-              Повторить
-            </button>
-          </section>
-        </div>
-      </main>
-    );
-  }
-
   return (
     <main className="app-shell app-shell--top">
       <div className="workspace-shell">
@@ -475,8 +542,16 @@ export default function App({ scenario }: AppProps) {
                 availableDatesByEventType={datesByEventType}
                 calendarDays={calendarDays}
                 initialSelectedDate={selectedHomeDate}
+                startupWarning={publicStartupWarning}
+                bookingsState={publicLoadStatuses.bookings}
+                availabilityState={publicLoadStatuses.availability}
+                bookingEntryDisabledReason={bookingEntryDisabledReason}
+                isRetryingStartup={!isScenarioMode && loading}
                 workspace="public"
                 onChangeWorkspace={handleWorkspaceChange}
+                onRetryStartup={
+                  isScenarioMode ? undefined : () => setReloadToken((currentToken) => currentToken + 1)
+                }
                 onCancelBooking={(bookingId) => {
                   if (isScenarioMode) {
                     setBookings((currentBookings) => cancelPublicBooking(currentBookings, bookingId));

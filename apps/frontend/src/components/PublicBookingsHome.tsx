@@ -14,8 +14,14 @@ type PublicBookingsHomeProps = {
   availableDatesByEventType: AvailableDatesByEventType;
   calendarDays: CalendarDay[];
   initialSelectedDate?: string;
+  startupWarning?: string;
+  bookingsState?: "loading" | "ready" | "error";
+  availabilityState?: "idle" | "loading" | "ready" | "error";
+  bookingEntryDisabledReason?: string;
+  isRetryingStartup?: boolean;
   workspace: Workspace;
   onChangeWorkspace: (workspace: Workspace) => void;
+  onRetryStartup?: () => void;
   onCancelBooking: (bookingId: string) => void;
   onStartBooking: (isoDate: string) => void;
 };
@@ -34,8 +40,14 @@ export function PublicBookingsHome({
   availableDatesByEventType,
   calendarDays,
   initialSelectedDate,
+  startupWarning,
+  bookingsState = "ready",
+  availabilityState = "ready",
+  bookingEntryDisabledReason,
+  isRetryingStartup = false,
   workspace,
   onChangeWorkspace,
+  onRetryStartup,
   onCancelBooking,
   onStartBooking,
 }: PublicBookingsHomeProps) {
@@ -43,14 +55,28 @@ export function PublicBookingsHome({
   const [selectedDate, setSelectedDate] = useState(initialSelectedDate ?? calendarDays[0]?.isoDate ?? "");
 
   useEffect(() => {
-    const nextSelectedDate =
-      initialSelectedDate && calendarDays.some((day) => day.isoDate === initialSelectedDate)
-        ? initialSelectedDate
-        : calendarDays[0]?.isoDate ?? "";
+    if (
+      selectedFilterId !== ALL_EVENT_TYPES_FILTER &&
+      !eventTypes.some((eventType) => eventType.id === selectedFilterId)
+    ) {
+      setSelectedFilterId(ALL_EVENT_TYPES_FILTER);
+    }
+  }, [eventTypes, selectedFilterId]);
 
-    setSelectedDate((currentDate) =>
-      calendarDays.some((day) => day.isoDate === currentDate) ? currentDate : nextSelectedDate,
+  useEffect(() => {
+    const hasInitialSelectedDate = Boolean(
+      initialSelectedDate && calendarDays.some((day) => day.isoDate === initialSelectedDate),
     );
+    const nextSelectedDate =
+      hasInitialSelectedDate ? initialSelectedDate : calendarDays[0]?.isoDate ?? "";
+
+    setSelectedDate((currentDate) => {
+      if (hasInitialSelectedDate) {
+        return nextSelectedDate;
+      }
+
+      return calendarDays.some((day) => day.isoDate === currentDate) ? currentDate : nextSelectedDate;
+    });
   }, [calendarDays, initialSelectedDate]);
 
   const daySummaries = buildCalendarDaySummaries(
@@ -68,6 +94,9 @@ export function PublicBookingsHome({
       : (availableDatesByEventType[selectedFilterId] ?? []).find(
           (day) => day.isoDate === selectedDay.isoDate,
         )?.slots.length ?? 0;
+  const isBookingEntryDisabled = Boolean(bookingEntryDisabledReason);
+  const isBookingsKnown = bookingsState === "ready";
+  const isAvailabilityKnown = availabilityState === "ready";
 
   return (
     <section className="bookings-home">
@@ -111,6 +140,25 @@ export function PublicBookingsHome({
         </div>
       </div>
 
+      {startupWarning ? (
+        <section className="availability-note bookings-home__warning" role="alert">
+          <div>
+            <strong>Часть данных не удалось загрузить.</strong>
+            <p className="bookings-home__warning-copy">{startupWarning}</p>
+          </div>
+          {onRetryStartup ? (
+            <button
+              type="button"
+              className="secondary-button bookings-home__warning-action"
+              disabled={isRetryingStartup}
+              onClick={onRetryStartup}
+            >
+              {isRetryingStartup ? "Повторяем..." : "Повторить"}
+            </button>
+          ) : null}
+        </section>
+      ) : null}
+
       <div className="filter-row" role="toolbar" aria-label="Фильтр по типу встречи">
         <button
           type="button"
@@ -128,7 +176,8 @@ export function PublicBookingsHome({
           const bookedCountForDay = selectedDayBookings.filter(
             (booking) => booking.eventTypeId === eventType.id,
           ).length;
-          const isRelevantForDay = freeCountForDay > 0 || bookedCountForDay > 0;
+          const isRelevantForDay =
+            !isBookingsKnown || !isAvailabilityKnown || freeCountForDay > 0 || bookedCountForDay > 0;
           const selected = selectedFilterId === eventType.id;
 
           return (
@@ -154,7 +203,11 @@ export function PublicBookingsHome({
           <div className="bookings-card__header">
             <p className="bookings-card__eyebrow">Календарь</p>
             <p className="bookings-card__caption">
-              {selectedFilterId === ALL_EVENT_TYPES_FILTER
+              {!isBookingsKnown
+                ? "Статус занятых слотов временно недоступен."
+                : !isAvailabilityKnown && selectedFilterId !== ALL_EVENT_TYPES_FILTER
+                  ? "Занятые слоты показаны, свободные слоты уточняются."
+                  : selectedFilterId === ALL_EVENT_TYPES_FILTER
                 ? "Показаны только занятые слоты."
                 : "Показаны занятые и свободные слоты."}
             </p>
@@ -164,7 +217,9 @@ export function PublicBookingsHome({
             {daySummaries.map((day) => {
               const selected = day.isoDate === selectedDay?.isoDate;
               const noFreeSlots =
-                selectedFilterId !== ALL_EVENT_TYPES_FILTER && (day.freeCount ?? 0) === 0;
+                selectedFilterId !== ALL_EVENT_TYPES_FILTER &&
+                isAvailabilityKnown &&
+                (day.freeCount ?? 0) === 0;
 
               return (
                 <button
@@ -184,9 +239,23 @@ export function PublicBookingsHome({
                   <span className="booking-calendar-day__weekday">{day.weekdayShort}</span>
                   <span className="booking-calendar-day__number">{day.dayNumber}</span>
                   <span className="booking-calendar-day__meta">
-                    <strong>{day.bookedCount} занято</strong>
-                    {selectedFilterId === ALL_EVENT_TYPES_FILTER ? null : (
+                    {isBookingsKnown ? (
+                      <strong>{day.bookedCount} занято</strong>
+                    ) : (
+                      <strong>
+                        {bookingsState === "loading"
+                          ? "Бронирования загружаются"
+                          : "Статус бронирований недоступен"}
+                      </strong>
+                    )}
+                    {selectedFilterId === ALL_EVENT_TYPES_FILTER ? null : isAvailabilityKnown ? (
                       <span>{day.freeCount} свободно</span>
+                    ) : (
+                      <span>
+                        {availabilityState === "loading"
+                          ? "Слоты загружаются"
+                          : "Слоты уточняются"}
+                      </span>
                     )}
                   </span>
                 </button>
@@ -204,19 +273,38 @@ export function PublicBookingsHome({
             <button
               type="button"
               className="primary-button"
+              aria-describedby={isBookingEntryDisabled ? "booking-entry-guard" : undefined}
+              disabled={isBookingEntryDisabled}
               onClick={() => selectedDay && onStartBooking(selectedDay.isoDate)}
             >
               Записаться
             </button>
           </div>
 
-          {selectedDayEventType && selectedDayFreeCount === 0 ? (
+          {bookingEntryDisabledReason ? (
+            <p id="booking-entry-guard" className="availability-note">
+              {bookingEntryDisabledReason}
+            </p>
+          ) : selectedDayEventType && isAvailabilityKnown && selectedDayFreeCount === 0 ? (
             <p className="availability-note">
               Для встречи «{selectedDayEventType.title}» на этот день свободных слотов нет.
             </p>
           ) : null}
 
-          {selectedDayBookings.length === 0 ? (
+          {!isBookingsKnown ? (
+            <div className="day-panel__empty">
+              <p>
+                {bookingsState === "loading"
+                  ? "Загружаем публичные бронирования для выбранной даты."
+                  : "Не удалось загрузить публичные бронирования для выбранной даты."}
+              </p>
+              <p>
+                {bookingsState === "loading"
+                  ? "Список встреч появится после завершения загрузки."
+                  : "Повторите попытку позже или обновите данные через предупреждение выше."}
+              </p>
+            </div>
+          ) : selectedDayBookings.length === 0 ? (
             <div className="day-panel__empty">
               <p>На выбранную дату публичных бронирований пока нет.</p>
               <p>Можно сразу открыть форму записи и выбрать подходящий слот.</p>

@@ -163,6 +163,22 @@ select {
   max-width: 60ch;
 }
 
+.bookings-home__warning {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.bookings-home__warning-copy {
+  margin: 6px 0 0;
+}
+
+.bookings-home__warning-action {
+  flex-shrink: 0;
+}
+
 .filter-row {
   display: flex;
   flex-wrap: wrap;

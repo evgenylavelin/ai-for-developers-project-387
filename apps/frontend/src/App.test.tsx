@@ -263,7 +263,7 @@ describe("App", () => {
     render(<App />);
 
     expect(await screen.findByRole("heading", { name: "Бронирования" })).toBeInTheDocument();
-    expect(screen.getByText("Иван Петров")).toBeInTheDocument();
+    expect(await screen.findByText("Иван Петров")).toBeInTheDocument();
     expect(fetchMock).toHaveBeenCalledWith("/event-types");
     expect(fetchMock).toHaveBeenCalledWith("/owner/event-types");
     expect(fetchMock).toHaveBeenCalledWith("/bookings");
@@ -332,11 +332,380 @@ describe("App", () => {
     render(<App />);
 
     expect(await screen.findByRole("heading", { name: "Бронирования" })).toBeInTheDocument();
-    expect(screen.getByText("Иван Петров")).toBeInTheDocument();
+    expect(await screen.findByText("Иван Петров")).toBeInTheDocument();
     expect(
       screen.queryByRole("heading", { name: "Не удалось загрузить данные" }),
     ).not.toBeInTheDocument();
     expect(fetchMock).toHaveBeenCalledWith("/owner/event-types");
+  });
+
+  it("renders the public home with an inline warning when bookings fail to load", async () => {
+    const fetchMock = vi.fn((input: RequestInfo | URL) => {
+      const url = String(input);
+
+      if (url.endsWith("/owner/event-types")) {
+        return Promise.resolve(createJsonResponse([]));
+      }
+
+      if (url.endsWith("/event-types")) {
+        return Promise.resolve(
+          createJsonResponse([
+            {
+              id: "standard",
+              title: "Стратегическая сессия",
+              durationMinutes: 30,
+            },
+          ]),
+        );
+      }
+
+      if (url.endsWith("/bookings")) {
+        return Promise.reject(new Error("network down"));
+      }
+
+      if (url.endsWith("/event-types/standard/availability")) {
+        return Promise.resolve(createJsonResponse([]));
+      }
+
+      throw new Error(`Unexpected request: ${url}`);
+    });
+
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<App />);
+
+    expect(await screen.findByRole("heading", { name: "Бронирования" })).toBeInTheDocument();
+    expect(await screen.findByText("Часть данных не удалось загрузить.")).toBeInTheDocument();
+    expect(screen.getByText("Не удалось загрузить публичные бронирования для выбранной даты.")).toBeInTheDocument();
+    expect(screen.queryByText("На выбранную дату публичных бронирований пока нет.")).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("heading", { name: "Не удалось загрузить данные" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("keeps the public home open and disables booking when event types fail to load", async () => {
+    const bookingDay = createApiBookingDay();
+
+    const fetchMock = vi.fn((input: RequestInfo | URL) => {
+      const url = String(input);
+
+      if (url.endsWith("/owner/event-types")) {
+        return Promise.resolve(createJsonResponse([]));
+      }
+
+      if (url.endsWith("/event-types")) {
+        return Promise.reject(new Error("network down"));
+      }
+
+      if (url.endsWith("/bookings")) {
+        return Promise.resolve(
+          createJsonResponse([
+            {
+              id: "booking-1",
+              eventTypeId: "standard",
+              startAt: `${bookingDay.isoDate}T09:00:00Z`,
+              endAt: `${bookingDay.isoDate}T09:30:00Z`,
+              guestName: "Иван Петров",
+              guestEmail: "ivan@example.com",
+              status: "active",
+            },
+          ]),
+        );
+      }
+
+      throw new Error(`Unexpected request: ${url}`);
+    });
+
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<App />);
+
+    expect(await screen.findByRole("heading", { name: "Бронирования" })).toBeInTheDocument();
+    expect(await screen.findByText("Иван Петров")).toBeInTheDocument();
+    expect(screen.getByText("Часть данных не удалось загрузить.")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Записаться" })).toBeDisabled();
+    expect(
+      screen.getByText("Запись временно недоступна: не удалось загрузить типы событий."),
+    ).toBeInTheDocument();
+  });
+
+  it("keeps the public home open and disables booking when availability fails to load", async () => {
+    const bookingDay = createApiBookingDay();
+
+    const fetchMock = vi.fn((input: RequestInfo | URL) => {
+      const url = String(input);
+
+      if (url.endsWith("/owner/event-types")) {
+        return Promise.resolve(createJsonResponse([]));
+      }
+
+      if (url.endsWith("/event-types")) {
+        return Promise.resolve(
+          createJsonResponse([
+            {
+              id: "standard",
+              title: "Стратегическая сессия",
+              durationMinutes: 30,
+            },
+          ]),
+        );
+      }
+
+      if (url.endsWith("/bookings")) {
+        return Promise.resolve(
+          createJsonResponse([
+            {
+              id: "booking-1",
+              eventTypeId: "standard",
+              startAt: `${bookingDay.isoDate}T09:00:00Z`,
+              endAt: `${bookingDay.isoDate}T09:30:00Z`,
+              guestName: "Иван Петров",
+              guestEmail: "ivan@example.com",
+              status: "active",
+            },
+          ]),
+        );
+      }
+
+      if (url.endsWith("/event-types/standard/availability")) {
+        return Promise.reject(new Error("network down"));
+      }
+
+      throw new Error(`Unexpected request: ${url}`);
+    });
+
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<App />);
+
+    expect(await screen.findByRole("heading", { name: "Бронирования" })).toBeInTheDocument();
+    expect(screen.getByText("Часть данных не удалось загрузить.")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Записаться" })).toBeDisabled();
+    expect(
+      screen.getByText("Запись временно недоступна: не удалось загрузить доступные слоты."),
+    ).toBeInTheDocument();
+  });
+
+  it("retries startup loading from the inline warning and clears it after success", async () => {
+    const bookingDay = createApiBookingDay();
+    let shouldFailBookings = true;
+
+    const fetchMock = vi.fn((input: RequestInfo | URL) => {
+      const url = String(input);
+
+      if (url.endsWith("/owner/event-types")) {
+        return Promise.resolve(createJsonResponse([]));
+      }
+
+      if (url.endsWith("/event-types")) {
+        return Promise.resolve(
+          createJsonResponse([
+            {
+              id: "standard",
+              title: "Стратегическая сессия",
+              durationMinutes: 30,
+            },
+          ]),
+        );
+      }
+
+      if (url.endsWith("/bookings")) {
+        if (shouldFailBookings) {
+          return Promise.reject(new Error("network down"));
+        }
+
+        return Promise.resolve(
+          createJsonResponse([
+            {
+              id: "booking-1",
+              eventTypeId: "standard",
+              startAt: `${bookingDay.isoDate}T09:00:00Z`,
+              endAt: `${bookingDay.isoDate}T09:30:00Z`,
+              guestName: "Иван Петров",
+              guestEmail: "ivan@example.com",
+              status: "active",
+            },
+          ]),
+        );
+      }
+
+      if (url.endsWith("/event-types/standard/availability")) {
+        return Promise.resolve(createJsonResponse([]));
+      }
+
+      throw new Error(`Unexpected request: ${url}`);
+    });
+
+    vi.stubGlobal("fetch", fetchMock);
+
+    const user = userEvent.setup();
+
+    render(<App />);
+
+    expect(await screen.findByText("Часть данных не удалось загрузить.")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Записаться" })).toBeEnabled();
+
+    shouldFailBookings = false;
+    await user.click(screen.getByRole("button", { name: "Повторить" }));
+
+    expect(
+      await within(screen.getByRole("button", { name: bookingDay.fullLabel })).findByText("1 занято"),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Записаться" })).toBeEnabled();
+    expect(screen.queryByText("Часть данных не удалось загрузить.")).not.toBeInTheDocument();
+    expect(
+      screen.queryByText("Не удалось загрузить публичные бронирования для выбранной даты."),
+    ).not.toBeInTheDocument();
+  });
+
+  it("re-enables booking after retry when event types fail during startup", async () => {
+    const bookingDay = createApiBookingDay();
+    let shouldFailEventTypes = true;
+
+    const fetchMock = vi.fn((input: RequestInfo | URL) => {
+      const url = String(input);
+
+      if (url.endsWith("/owner/event-types")) {
+        return Promise.resolve(createJsonResponse([]));
+      }
+
+      if (url.endsWith("/event-types")) {
+        if (shouldFailEventTypes) {
+          return Promise.reject(new Error("network down"));
+        }
+
+        return Promise.resolve(
+          createJsonResponse([
+            {
+              id: "standard",
+              title: "Стратегическая сессия",
+              durationMinutes: 30,
+            },
+          ]),
+        );
+      }
+
+      if (url.endsWith("/bookings")) {
+        return Promise.resolve(
+          createJsonResponse([
+            {
+              id: "booking-1",
+              eventTypeId: "standard",
+              startAt: `${bookingDay.isoDate}T09:00:00Z`,
+              endAt: `${bookingDay.isoDate}T09:30:00Z`,
+              guestName: "Иван Петров",
+              guestEmail: "ivan@example.com",
+              status: "active",
+            },
+          ]),
+        );
+      }
+
+      if (url.endsWith("/event-types/standard/availability")) {
+        return Promise.resolve(createJsonResponse([]));
+      }
+
+      throw new Error(`Unexpected request: ${url}`);
+    });
+
+    vi.stubGlobal("fetch", fetchMock);
+
+    const user = userEvent.setup();
+
+    render(<App />);
+
+    expect(await screen.findByText("Часть данных не удалось загрузить.")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Записаться" })).toBeDisabled();
+    expect(
+      screen.getByText("Запись временно недоступна: не удалось загрузить типы событий."),
+    ).toBeInTheDocument();
+
+    shouldFailEventTypes = false;
+    await user.click(screen.getByRole("button", { name: "Повторить" }));
+
+    expect(await screen.findByRole("button", { name: /Стратегическая сессия, 30 мин/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Записаться" })).toBeEnabled();
+    expect(screen.queryByText("Часть данных не удалось загрузить.")).not.toBeInTheDocument();
+    expect(
+      screen.queryByText("Запись временно недоступна: не удалось загрузить типы событий."),
+    ).not.toBeInTheDocument();
+  });
+
+  it("clears a combined startup warning after retry when bookings and event types both recover", async () => {
+    const bookingDay = createApiBookingDay();
+    let shouldFailStartup = true;
+
+    const fetchMock = vi.fn((input: RequestInfo | URL) => {
+      const url = String(input);
+
+      if (url.endsWith("/owner/event-types")) {
+        return Promise.resolve(createJsonResponse([]));
+      }
+
+      if (url.endsWith("/event-types")) {
+        if (shouldFailStartup) {
+          return Promise.reject(new Error("event types down"));
+        }
+
+        return Promise.resolve(
+          createJsonResponse([
+            {
+              id: "standard",
+              title: "Стратегическая сессия",
+              durationMinutes: 30,
+            },
+          ]),
+        );
+      }
+
+      if (url.endsWith("/bookings")) {
+        if (shouldFailStartup) {
+          return Promise.reject(new Error("bookings down"));
+        }
+
+        return Promise.resolve(
+          createJsonResponse([
+            {
+              id: "booking-1",
+              eventTypeId: "standard",
+              startAt: `${bookingDay.isoDate}T09:00:00Z`,
+              endAt: `${bookingDay.isoDate}T09:30:00Z`,
+              guestName: "Иван Петров",
+              guestEmail: "ivan@example.com",
+              status: "active",
+            },
+          ]),
+        );
+      }
+
+      if (url.endsWith("/event-types/standard/availability")) {
+        return Promise.resolve(createJsonResponse([]));
+      }
+
+      throw new Error(`Unexpected request: ${url}`);
+    });
+
+    vi.stubGlobal("fetch", fetchMock);
+
+    const user = userEvent.setup();
+
+    render(<App />);
+
+    expect(await screen.findByText("Часть данных не удалось загрузить.")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Записаться" })).toBeDisabled();
+    expect(
+      screen.getByText("Проблемы с загрузкой: бронирования, типы событий."),
+    ).toBeInTheDocument();
+
+    shouldFailStartup = false;
+    await user.click(screen.getByRole("button", { name: "Повторить" }));
+
+    expect(
+      await within(screen.getByRole("button", { name: bookingDay.fullLabel })).findByText("1 занято"),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Записаться" })).toBeEnabled();
+    expect(screen.queryByText("Часть данных не удалось загрузить.")).not.toBeInTheDocument();
+    expect(screen.queryByText("Проблемы с загрузкой: бронирования, типы событий.")).not.toBeInTheDocument();
   });
 
   it("refreshes bookings and availability after a successful API booking", async () => {
@@ -414,6 +783,7 @@ describe("App", () => {
     expect(await screen.findByRole("heading", { name: "Бронирования" })).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Записаться" }));
+    await user.click(screen.getByRole("button", { name: bookingDay.shortLabel }));
     await user.click(screen.getByRole("button", { name: "10:30" }));
     await user.click(screen.getByRole("button", { name: "Далее" }));
     await user.type(screen.getByLabelText("Имя"), "Мария");
@@ -427,7 +797,7 @@ describe("App", () => {
     await user.click(screen.getByRole("button", { name: "Вернуться к бронированиям" }));
 
     expect(await screen.findByRole("heading", { name: "Бронирования" })).toBeInTheDocument();
-    expect(screen.getByText("Мария")).toBeInTheDocument();
+    expect(await screen.findByText("Мария")).toBeInTheDocument();
     expect(
       within(screen.getByRole("button", { name: bookingDay.fullLabel })).getByText("2 занято"),
     ).toBeInTheDocument();
@@ -491,6 +861,10 @@ describe("App", () => {
     const user = userEvent.setup();
 
     render(<App />);
+
+    expect(await screen.findByRole("heading", { name: "Бронирования" })).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Записаться" }));
 
     expect(
       await screen.findByRole("heading", { name: "Выберите дату и время" }),
