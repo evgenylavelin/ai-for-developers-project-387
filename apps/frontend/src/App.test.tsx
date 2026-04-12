@@ -232,6 +232,28 @@ describe("App", () => {
     expect(
       screen.getByRole("heading", { name: "Бронирование подтверждено" }),
     ).toBeInTheDocument();
+    expect(screen.getByText("Детали встречи сохранены.")).toBeInTheDocument();
     expect(screen.getByText("30 минут • Среда, 15 апреля • 10:30")).toBeInTheDocument();
+  });
+
+  it("returns to the beginning from the success screen", async () => {
+    const user = userEvent.setup();
+
+    render(<App scenario="multi" />);
+
+    await user.click(screen.getByRole("button", { name: "30 минут" }));
+    await user.click(screen.getByRole("button", { name: "Далее" }));
+    await user.click(screen.getByRole("button", { name: "09:00" }));
+    await user.click(screen.getByRole("button", { name: "Далее" }));
+    await user.type(screen.getByLabelText("Имя"), "Иван");
+    await user.type(screen.getByLabelText("Email"), "ivan@example.com");
+    await user.click(screen.getByRole("button", { name: "Подтвердить" }));
+    await user.click(screen.getByRole("button", { name: "Вернуться в начало" }));
+
+    expect(screen.getByRole("heading", { name: "Выберите тип встречи" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Далее" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "30 минут" })).not.toHaveClass(
+      "choice-card--selected",
+    );
   });
 });

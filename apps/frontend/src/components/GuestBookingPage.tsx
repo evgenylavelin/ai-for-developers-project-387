@@ -99,9 +99,18 @@ export function GuestBookingPage({ eventTypes, dates }: GuestBookingPageProps) {
             fullDateLabel: activeDate?.fullLabel,
             timeLabel: selectedTime || undefined,
           });
+  const restartBookingFlow = () => {
+    setSelectedEventTypeId(entryState.kind === "direct-booking" ? entryState.presetEventType.id : "");
+    setSelectedDate(dates[0]?.isoDate ?? "");
+    setSelectedTime("");
+    setName("");
+    setEmail("");
+    setSubmissionError("");
+    setCurrentScreen(startsWithEventType ? "event-type" : "date-time");
+  };
 
   if (currentScreen === "success") {
-    return <SuccessState summary={fullSummary} />;
+    return <SuccessState summary={fullSummary} onRestart={restartBookingFlow} />;
   }
 
   const activeIndex =
