@@ -1,13 +1,13 @@
 import type { Booking, EventType, ScheduleDay } from "../types";
 
 export const multiEventTypes: EventType[] = [
-  { id: "intro", title: "15 минут", durationMinutes: 15 },
-  { id: "standard", title: "30 минут", durationMinutes: 30 },
-  { id: "deep-dive", title: "60 минут", durationMinutes: 60 },
+  { id: "intro", title: "Короткий созвон", durationMinutes: 15 },
+  { id: "standard", title: "Стратегическая сессия", durationMinutes: 30 },
+  { id: "deep-dive", title: "Ретроспектива проекта", durationMinutes: 60 },
 ];
 
 export const singleEventType: EventType[] = [
-  { id: "standard", title: "30 минут", durationMinutes: 30 },
+  { id: "standard", title: "Стратегическая сессия", durationMinutes: 30 },
 ];
 
 export const noEventTypes: EventType[] = [];

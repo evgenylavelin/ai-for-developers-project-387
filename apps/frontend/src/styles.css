@@ -170,13 +170,40 @@ select {
 }
 
 .filter-chip {
-  min-height: 40px;
-  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  min-height: 52px;
+  padding: 12px 16px;
   border: 1px solid rgba(24, 33, 23, 0.1);
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.86);
   color: #23301f;
   cursor: pointer;
+  text-align: left;
+}
+
+.filter-chip__label {
+  position: relative;
+  display: inline-block;
+  padding-top: 12px;
+}
+
+.filter-chip__title {
+  display: block;
+  min-width: 0;
+  font-weight: 600;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+.filter-chip__meta {
+  position: absolute;
+  top: 0;
+  right: 0;
+  font-size: 0.68rem;
+  line-height: 1;
+  white-space: nowrap;
+  color: rgba(24, 33, 23, 0.6);
 }
 
 .filter-chip:disabled {
@@ -188,6 +215,10 @@ select {
   border-color: #182117;
   background: #182117;
   color: #fff;
+}
+
+.filter-chip--active .filter-chip__meta {
+  color: rgba(255, 255, 255, 0.72);
 }
 
 .bookings-home__layout {

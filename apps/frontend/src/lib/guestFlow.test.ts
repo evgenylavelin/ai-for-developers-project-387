@@ -53,20 +53,20 @@ describe("formatSummary", () => {
   it("formats event type, full date, and time in one line", () => {
     expect(
       formatSummary({
-        eventTypeTitle: "30 минут",
+        eventTypeTitle: "Стратегическая сессия",
         fullDateLabel: "Среда, 15 апреля",
         timeLabel: "10:30",
       }),
-    ).toBe("30 минут • Среда, 15 апреля • 10:30");
+    ).toBe("Стратегическая сессия • Среда, 15 апреля • 10:30");
   });
 
   it("omits missing summary parts without extra separators", () => {
     expect(
       formatSummary({
-        eventTypeTitle: "30 минут",
+        eventTypeTitle: "Стратегическая сессия",
         timeLabel: "10:30",
       }),
-    ).toBe("30 минут • 10:30");
+    ).toBe("Стратегическая сессия • 10:30");
   });
 
   it("returns the single available part when others are missing", () => {

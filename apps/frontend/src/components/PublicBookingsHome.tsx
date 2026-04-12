@@ -23,6 +23,10 @@ function formatInterval(startAt: string, endAt: string): string {
   return `${startAt.slice(11, 16)} - ${endAt.slice(11, 16)}`;
 }
 
+function formatDuration(durationMinutes: number): string {
+  return `${durationMinutes} мин`;
+}
+
 export function PublicBookingsHome({
   bookings,
   eventTypes,
@@ -123,10 +127,14 @@ export function PublicBookingsHome({
               key={eventType.id}
               type="button"
               className={`filter-chip${selected ? " filter-chip--active" : ""}`}
+              aria-label={`${eventType.title}, ${formatDuration(eventType.durationMinutes)}`}
               disabled={!selected && !isRelevantForDay}
               onClick={() => setSelectedFilterId(eventType.id)}
             >
-              {eventType.title}
+              <span className="filter-chip__label">
+                <span className="filter-chip__meta">{formatDuration(eventType.durationMinutes)}</span>
+                <span className="filter-chip__title">{eventType.title}</span>
+              </span>
             </button>
           );
         })}

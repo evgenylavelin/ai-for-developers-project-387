@@ -33,7 +33,7 @@ describe("App", () => {
 
     expect(nextButton).toBeDisabled();
 
-    await user.click(screen.getByRole("button", { name: "30 минут" }));
+    await user.click(screen.getByRole("button", { name: "Стратегическая сессия" }));
 
     expect(nextButton).toBeEnabled();
   });
@@ -51,10 +51,10 @@ describe("App", () => {
 
     render(<App scenario="multi" />);
 
-    await user.click(screen.getByRole("button", { name: "30 минут" }));
+    await user.click(screen.getByRole("button", { name: "Стратегическая сессия" }));
     await user.click(screen.getByRole("button", { name: "Далее" }));
 
-    expect(screen.getByText("30 минут")).toBeInTheDocument();
+    expect(screen.getByText("Стратегическая сессия")).toBeInTheDocument();
     expect(
       screen.getByRole("heading", { name: "Выберите дату и время" }),
     ).toBeInTheDocument();
@@ -74,7 +74,7 @@ describe("App", () => {
 
     render(<App scenario="public" />);
 
-    await user.click(screen.getByRole("button", { name: "30 минут" }));
+    await user.click(screen.getByRole("button", { name: "Стратегическая сессия, 30 мин" }));
 
     const selectedDay = screen.getByRole("button", { name: "Среда, 15 апреля" });
 
@@ -226,17 +226,17 @@ describe("App", () => {
 
     render(<GuestBookingPage eventTypes={multiEventTypes} datesByEventType={datesByEventType} />);
 
-    await user.click(screen.getByRole("button", { name: "30 минут" }));
+    await user.click(screen.getByRole("button", { name: "Стратегическая сессия" }));
     await user.click(screen.getByRole("button", { name: "Далее" }));
     await user.click(screen.getByRole("button", { name: "09:00" }));
 
-    expect(within(screen.getByLabelText("Результат предыдущих шагов")).getByText("30 минут")).toBeInTheDocument();
+    expect(within(screen.getByLabelText("Результат предыдущих шагов")).getByText("Стратегическая сессия")).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Назад" }));
-    await user.click(screen.getByRole("button", { name: "15 минут" }));
+    await user.click(screen.getByRole("button", { name: "Короткий созвон" }));
     await user.click(screen.getByRole("button", { name: "Далее" }));
 
-    expect(screen.getByText("15 минут")).toBeInTheDocument();
+    expect(screen.getByText("Короткий созвон")).toBeInTheDocument();
     expect(
       within(screen.getByLabelText("Результат предыдущих шагов")).queryByText(
         "Среда, 15 апреля • 09:00",
@@ -277,7 +277,7 @@ describe("App", () => {
 
     await user.click(screen.getByRole("button", { name: "Пятница, 17 апреля" }));
     await user.click(screen.getByRole("button", { name: "Записаться" }));
-    await user.click(screen.getByRole("button", { name: "30 минут" }));
+    await user.click(screen.getByRole("button", { name: "Стратегическая сессия" }));
     await user.click(screen.getByRole("button", { name: "Далее" }));
 
     expect(screen.getByText("Пятница, 17 апреля")).toBeInTheDocument();
@@ -312,7 +312,7 @@ describe("App", () => {
       screen.getByRole("heading", { name: "Бронирование подтверждено" }),
     ).toBeInTheDocument();
     expect(screen.getByText("Детали встречи сохранены.")).toBeInTheDocument();
-    expect(screen.getByText("30 минут • Среда, 15 апреля • 10:30")).toBeInTheDocument();
+    expect(screen.getByText("Стратегическая сессия • Среда, 15 апреля • 10:30")).toBeInTheDocument();
   });
 
   it("returns from the success screen back to public bookings and shows the new booking", async () => {
@@ -322,7 +322,7 @@ describe("App", () => {
 
     await user.click(screen.getByRole("button", { name: "Пятница, 17 апреля" }));
     await user.click(screen.getByRole("button", { name: "Записаться" }));
-    await user.click(screen.getByRole("button", { name: "30 минут" }));
+    await user.click(screen.getByRole("button", { name: "Стратегическая сессия" }));
     await user.click(screen.getByRole("button", { name: "Далее" }));
     await user.click(screen.getByRole("button", { name: "09:00" }));
     await user.click(screen.getByRole("button", { name: "Далее" }));
@@ -341,7 +341,7 @@ describe("App", () => {
 
     render(<App scenario="multi" />);
 
-    await user.click(screen.getByRole("button", { name: "30 минут" }));
+    await user.click(screen.getByRole("button", { name: "Стратегическая сессия" }));
     await user.click(screen.getByRole("button", { name: "Далее" }));
     await user.click(screen.getByRole("button", { name: "09:00" }));
     await user.click(screen.getByRole("button", { name: "Далее" }));
@@ -352,7 +352,7 @@ describe("App", () => {
 
     expect(screen.getByRole("heading", { name: "Выберите тип встречи" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Далее" })).toBeDisabled();
-    expect(screen.getByRole("button", { name: "30 минут" })).not.toHaveClass(
+    expect(screen.getByRole("button", { name: "Стратегическая сессия" })).not.toHaveClass(
       "choice-card--selected",
     );
   });
@@ -364,12 +364,12 @@ describe("App", () => {
 
     expect(screen.getByRole("heading", { name: "Бронирования" })).toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: "Управление типами событий" }));
+    await user.click(screen.getByRole("button", { name: "Типы событий" }));
 
     expect(screen.getByRole("heading", { name: "Управление типами событий" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Редактирование типа события" })).toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: "Публичные бронирования" }));
+    await user.click(screen.getByRole("button", { name: "Бронирования" }));
 
     expect(screen.getByRole("heading", { name: "Бронирования" })).toBeInTheDocument();
   });
@@ -379,7 +379,7 @@ describe("App", () => {
 
     render(<App scenario="public" />);
 
-    await user.click(screen.getByRole("button", { name: "Управление типами событий" }));
+    await user.click(screen.getByRole("button", { name: "Типы событий" }));
     await user.click(screen.getByRole("button", { name: "+ Создать тип события" }));
 
     expect(screen.getByRole("heading", { name: "Новый тип события" })).toBeInTheDocument();
@@ -396,7 +396,7 @@ describe("App", () => {
 
     render(<App scenario="public" />);
 
-    await user.click(screen.getByRole("button", { name: "Управление типами событий" }));
+    await user.click(screen.getByRole("button", { name: "Типы событий" }));
     await user.click(screen.getByRole("button", { name: "+ Создать тип события" }));
     await user.type(screen.getByLabelText("Название"), "Новая диагностика");
     await user.type(
@@ -421,7 +421,7 @@ describe("App", () => {
 
     render(<App scenario="public" />);
 
-    await user.click(screen.getByRole("button", { name: "Управление типами событий" }));
+    await user.click(screen.getByRole("button", { name: "Типы событий" }));
     await user.click(screen.getByRole("button", { name: /Короткий созвон/i }));
     await user.click(screen.getByRole("button", { name: "Удалить" }));
 
@@ -444,7 +444,7 @@ describe("App", () => {
 
     render(<App scenario="public" />);
 
-    await user.click(screen.getByRole("button", { name: "Управление типами событий" }));
+    await user.click(screen.getByRole("button", { name: "Типы событий" }));
 
     const selectedEventType = within(
       screen.getByRole("list", { name: "Список типов событий" }),
