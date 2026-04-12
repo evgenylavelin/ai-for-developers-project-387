@@ -1,0 +1,102 @@
+<h2>Куда поставить кнопку `Записаться`</h2>
+<p class="subtitle">Сравнение трёх вариантов, если действие должно быть привязано к выбранному дню, а не ко всему экрану.</p>
+
+<div class="cards">
+  <div class="card" data-choice="day-header-action" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mockup">
+        <div class="mockup-header">A. В заголовке дня</div>
+        <div class="mockup-body">
+          <div style="border:1px solid #e4e4e7;border-radius:12px;padding:12px;background:#fff;">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:10px;">
+              <div>
+                <strong>Среда, 15 апреля</strong>
+                <p style="margin:4px 0 0;color:#666;font-size:12px;">2 active, 1 cancelled</p>
+              </div>
+              <button class="mock-button">Записаться</button>
+            </div>
+            <div class="placeholder" style="min-height:120px;">Список записей выбранного дня</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>В заголовке дня</h3>
+      <p>Самый компактный и понятный вариант. Хорошо работает и на desktop, и на mobile.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="day-action-block" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mockup">
+        <div class="mockup-header">B. Отдельный блок выбранного дня</div>
+        <div class="mockup-body">
+          <div style="border:1px solid #e4e4e7;border-radius:12px;padding:12px;background:#fff;">
+            <strong>Среда, 15 апреля</strong>
+            <p style="margin:6px 0 10px;color:#666;font-size:12px;">Свободно 5 • Забронировано 2</p>
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:10px;">
+              <span class="label">Выбранный день</span>
+              <button class="mock-button">Записаться на этот день</button>
+            </div>
+            <div class="placeholder" style="min-height:120px;">Список записей выбранного дня</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Отдельный action-block</h3>
+      <p>Сильнее подчёркивает контекст дня и хорошо помещает рядом агрегаты `free/booked`.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="calendar-cell-action" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mockup">
+        <div class="mockup-header">C. Прямо в ячейке календаря</div>
+        <div class="mockup-body">
+          <div style="border:1px solid #e4e4e7;border-radius:12px;padding:12px;background:#fff;">
+            <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:8px;">
+              <div class="placeholder" style="min-height:96px;text-align:left;padding:6px;">
+                <div><strong>15</strong></div>
+                <div style="font-size:10px;margin-top:4px;">free 5</div>
+                <div style="font-size:10px;">booked 2</div>
+                <button class="mock-button" style="margin-top:6px;font-size:10px;padding:4px 6px;">Записаться</button>
+              </div>
+              <div class="placeholder">16</div>
+              <div class="placeholder">17</div>
+              <div class="placeholder">18</div>
+              <div class="placeholder">19</div>
+              <div class="placeholder">20</div>
+              <div class="placeholder">21</div>
+            </div>
+            <p style="margin:10px 0 0;color:#666;font-size:12px;">Кнопка появляется только у активного дня.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Внутри ячейки календаря</h3>
+      <p>Максимально жёсткая привязка к дню, но интерфейс быстро становится тесным и шумным.</p>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="pros-cons">
+    <div class="pros">
+      <h4>Мой уклон</h4>
+      <ul>
+        <li>Лучший баланс у варианта B</li>
+        <li>Он даёт сильный контекст выбранного дня</li>
+        <li>На mobile естественно переносится под календарь</li>
+      </ul>
+    </div>
+    <div class="cons">
+      <h4>Если нужен минимум UI</h4>
+      <ul>
+        <li>Тогда вариант A проще и чище</li>
+        <li>Вариант C я бы не рекомендовал для адаптивного MVP</li>
+      </ul>
+    </div>
+  </div>
+</div>

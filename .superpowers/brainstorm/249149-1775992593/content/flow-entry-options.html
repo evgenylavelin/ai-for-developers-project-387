@@ -1,0 +1,85 @@
+<h2>Точка входа в календарь</h2>
+<p class="subtitle">Нужно решить, что пользователь видит первым экраном до будущего роутинга и разделения ролей.</p>
+
+<div class="cards">
+  <div class="card" data-choice="auto-booking" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mockup">
+        <div class="mockup-header">A. Авто-старт бронирования</div>
+        <div class="mockup-body">
+          <div class="mock-content">
+            <strong>Если бронирований нет</strong>
+            <p>Сразу wizard бронирования</p>
+            <hr />
+            <strong>Если бронирования есть</strong>
+            <p>Сразу календарь с занятыми слотами</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Автоматический вход</h3>
+      <p>Минимум кликов, но стартовый экран меняется в зависимости от данных и может вести себя неочевидно.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="calendar-home" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mockup">
+        <div class="mockup-header">B. Единый календарь как home</div>
+        <div class="mockup-body">
+          <div class="mock-content">
+            <strong>Всегда сначала календарь</strong>
+            <p>Свободные и занятые интервалы</p>
+            <p>Дальше: создать / открыть бронь / отменить</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Календарь как главная</h3>
+      <p>Один понятный entry point, но UI и контракт сразу становятся сложнее, потому что экран смешивает просмотр и создание.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="mode-switcher" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mockup">
+        <div class="mockup-header">C. Явный выбор режима</div>
+        <div class="mockup-body">
+          <div class="mock-content">
+            <strong>Стартовый переключатель</strong>
+            <p>Забронировать</p>
+            <p>Бронирования</p>
+            <p>Админка later</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Переключатель режимов</h3>
+      <p>Лучше масштабируется и не прячет разные сценарии за магией данных. Цена: один дополнительный шаг на входе.</p>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="pros-cons">
+    <div class="pros">
+      <h4>Что важно проверить</h4>
+      <ul>
+        <li>Насколько явным должен быть режим работы экрана</li>
+        <li>Нужно ли гостю всегда видеть свои бронирования до новой записи</li>
+        <li>Готовы ли мы смешивать owner и guest в одном списке без явного разделения</li>
+      </ul>
+    </div>
+    <div class="cons">
+      <h4>Мой текущий уклон</h4>
+      <ul>
+        <li>Для MVP безопаснее вариант C</li>
+        <li>Вариант A рискован по UX: один и тот же URL ведет в разные миры</li>
+        <li>Вариант B слишком рано делает календарь центральной сущностью</li>
+      </ul>
+    </div>
+  </div>
+</div>

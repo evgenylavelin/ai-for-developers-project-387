@@ -1,0 +1,114 @@
+<h2>Вариант 3: Календарь + список дня</h2>
+<p class="subtitle">Главный экран показывает обзор занятости и детали выбранного дня. Если записей нет, этот экран пропускается и открывается wizard бронирования.</p>
+
+<div class="cards">
+  <div class="card" data-choice="hybrid-approve" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mockup">
+        <div class="mockup-header">Главный экран: Бронирования</div>
+        <div class="mockup-body">
+          <div style="display:grid;grid-template-columns:1.1fr 1.4fr;gap:16px;align-items:start;">
+            <div>
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                <strong>Апрель 2026</strong>
+                <button class="mock-button">Записаться</button>
+              </div>
+              <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;font-size:12px;margin-bottom:6px;">
+                <div>Пн</div><div>Вт</div><div>Ср</div><div>Чт</div><div>Пт</div><div>Сб</div><div>Вс</div>
+              </div>
+              <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;">
+                <div class="placeholder">13</div>
+                <div class="placeholder">14</div>
+                <div class="placeholder" style="border-color:#111;">15</div>
+                <div class="placeholder">16</div>
+                <div class="placeholder">17</div>
+                <div class="placeholder">18</div>
+                <div class="placeholder">19</div>
+                <div class="placeholder">20</div>
+                <div class="placeholder">21</div>
+                <div class="placeholder" style="background:#f3f4f6;">22</div>
+                <div class="placeholder">23</div>
+                <div class="placeholder">24</div>
+                <div class="placeholder">25</div>
+                <div class="placeholder">26</div>
+              </div>
+              <p style="margin-top:10px;font-size:12px;color:#555;">Дни с записями визуально отмечены. Выбранный день раскрывает список справа.</p>
+            </div>
+
+            <div>
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                <strong>Среда, 15 апреля</strong>
+                <span class="label">2 записи</span>
+              </div>
+
+              <div style="display:grid;gap:10px;">
+                <div style="border:1px solid #d4d4d8;border-radius:10px;padding:12px;background:#fff;">
+                  <div style="display:flex;justify-content:space-between;gap:12px;align-items:start;">
+                    <div>
+                      <strong>30 минут</strong>
+                      <p style="margin:6px 0 0;">10:30-11:00</p>
+                      <p style="margin:6px 0 0;">Иван Петров</p>
+                      <p style="margin:6px 0 0;color:#555;">ivan@example.com</p>
+                    </div>
+                    <button class="mock-button">Отменить</button>
+                  </div>
+                </div>
+
+                <div style="border:1px solid #d4d4d8;border-radius:10px;padding:12px;background:#fff;">
+                  <div style="display:flex;justify-content:space-between;gap:12px;align-items:start;">
+                    <div>
+                      <strong>60 минут</strong>
+                      <p style="margin:6px 0 0;">14:00-15:00</p>
+                      <p style="margin:6px 0 0;">Анна Смирнова</p>
+                      <p style="margin:6px 0 0;color:#555;">anna@example.com</p>
+                    </div>
+                    <button class="mock-button">Отменить</button>
+                  </div>
+                </div>
+
+                <div style="border:1px solid #d4d4d8;border-radius:10px;padding:12px;background:#fafafa;color:#666;">
+                  <div style="display:flex;justify-content:space-between;gap:12px;align-items:start;">
+                    <div>
+                      <strong>30 минут</strong>
+                      <p style="margin:6px 0 0;">16:30-17:00</p>
+                      <p style="margin:6px 0 0;">Мария Иванова</p>
+                      <p style="margin:6px 0 0;">maria@example.com</p>
+                    </div>
+                    <span class="label">cancelled</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Гибридный home-экран</h3>
+      <p>Календарь даёт обзор, список дня показывает полные данные и действия. Это самый сбалансированный вариант для учебного MVP.</p>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Как работает flow</h3>
+  <div class="pros-cons">
+    <div class="pros">
+      <h4>Поведение</h4>
+      <ul>
+        <li>Если записей нет, сразу открывается flow бронирования</li>
+        <li>Если записи есть, стартовый экран это `Бронирования`</li>
+        <li>Кнопка `Записаться` открывает текущий wizard</li>
+        <li>Запись остаётся видимой после отмены, но со статусом `cancelled`</li>
+      </ul>
+    </div>
+    <div class="cons">
+      <h4>Что ещё нужно решить</h4>
+      <ul>
+        <li>Нужен ли отдельный режим списка без календаря на мобильном</li>
+        <li>Возвращать ли после успешного бронирования сюда или через success-screen</li>
+        <li>Показывать ли все дни сразу или только ближайшие 14 дней</li>
+      </ul>
+    </div>
+  </div>
+</div>
