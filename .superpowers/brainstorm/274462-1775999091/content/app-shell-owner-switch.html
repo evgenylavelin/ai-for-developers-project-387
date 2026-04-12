@@ -1,0 +1,165 @@
+<h2>Общий Дизайн Приложения</h2>
+<p class="subtitle">Макет показывает, как публичный экран и owner page сосуществуют в одном frontend без смешивания сценариев.</p>
+
+<div class="split">
+  <div class="mockup">
+    <div class="mockup-header">Desktop · Public screen with owner switch</div>
+    <div class="mockup-body">
+      <div class="mock-nav" style="display:flex; justify-content:space-between;">
+        <span>Call Planner</span>
+        <span>Публичный календарь | <strong>Управление типами</strong></span>
+      </div>
+      <div style="display:grid; grid-template-columns:1.1fr .9fr; gap:16px; margin-top:14px;">
+        <div style="border:1px solid #d8d2c4; border-radius:16px; padding:14px; background:#fffdf8;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <div class="label">Public</div>
+              <h3 style="margin:4px 0 0;">Ближайшие бронирования</h3>
+            </div>
+            <button class="mock-button">Записаться</button>
+          </div>
+          <div style="margin-top:14px; border:1px solid #e9e0cf; border-radius:14px; padding:12px; background:#fbf7ef;">
+            <strong>Апрель 2026</strong>
+            <div style="display:grid; grid-template-columns:repeat(7,1fr); gap:6px; margin-top:10px; font-size:12px;">
+              <div class="placeholder" style="height:48px;">12</div>
+              <div class="placeholder" style="height:48px; background:#eef7f5; border-color:#1d4d4f;">13</div>
+              <div class="placeholder" style="height:48px;">14</div>
+              <div class="placeholder" style="height:48px;">15</div>
+              <div class="placeholder" style="height:48px;">16</div>
+              <div class="placeholder" style="height:48px;">17</div>
+              <div class="placeholder" style="height:48px;">18</div>
+            </div>
+          </div>
+          <div style="margin-top:14px; display:grid; gap:10px;">
+            <div style="border:1px solid #e7dfcf; border-radius:12px; padding:10px;">
+              <strong>13 апреля · Первичная консультация</strong>
+              <div class="subtitle">10:00 - 10:30 · Анна Иванова</div>
+            </div>
+            <div style="border:1px solid #e7dfcf; border-radius:12px; padding:10px;">
+              <strong>13 апреля · Разбор кейса</strong>
+              <div class="subtitle">14:00 - 15:00 · Сергей Петров</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="border:1px solid #1d4d4f; border-radius:18px; padding:14px; background:#eef7f5;">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+            <div>
+              <div class="label">Owner</div>
+              <h3 style="margin:4px 0 0;">Управление типами событий</h3>
+              <p class="subtitle" style="margin-top:6px;">Отдельная страница открывается из верхней навигации и не смешивается с публичной записью.</p>
+            </div>
+            <button class="mock-button">Перейти</button>
+          </div>
+
+          <div style="margin-top:14px; display:flex; gap:12px; min-height:260px;">
+            <div style="flex:0 0 42%; border:1px solid #c9ddda; border-radius:14px; padding:12px; background:white;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <strong>Типы событий</strong>
+                <button class="mock-button">+ Создать</button>
+              </div>
+              <div style="display:grid; gap:8px;">
+                <div style="border:1px solid #1d4d4f; border-radius:10px; padding:10px; background:#eef7f5;">
+                  <strong>Первичная консультация</strong>
+                  <div class="subtitle">30 мин · Активен</div>
+                </div>
+                <div style="border:1px solid #d8d2c4; border-radius:10px; padding:10px; background:#fffdf8;">
+                  <strong>Разбор кейса</strong>
+                  <div class="subtitle">60 мин · Активен</div>
+                </div>
+                <div style="border:1px dashed #b7ab90; border-radius:10px; padding:10px; background:#f4efe3;">
+                  <strong>Диагностика</strong>
+                  <div class="subtitle">45 мин · Архив</div>
+                </div>
+              </div>
+            </div>
+            <div style="flex:1; border:1px solid #c9ddda; border-radius:14px; padding:12px; background:#fffdf8;">
+              <strong>Редактирование типа</strong>
+              <div style="height:10px;"></div>
+              <input class="mock-input" value="Первичная консультация" />
+              <div style="height:10px;"></div>
+              <div class="placeholder" style="height:72px;">Описание типа события</div>
+              <div style="height:10px;"></div>
+              <input class="mock-input" value="30 минут" />
+              <div style="margin-top:12px; padding:10px; border-radius:10px; background:#f9f1dd; font-size:13px;">
+                Использовался в бронированиях. Доступно только архивирование.
+              </div>
+              <div style="display:flex; gap:10px; margin-top:12px;">
+                <button class="mock-button">Сохранить</button>
+                <button class="mock-button" style="background:#d9c5a1; color:#3f2f16;">Архивировать</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mockup">
+    <div class="mockup-header">Mobile · Same app, stacked owner page</div>
+    <div class="mockup-body">
+      <div class="mock-nav" style="display:flex; justify-content:space-between;">
+        <span>Call Planner</span>
+        <span>Menu</span>
+      </div>
+      <div style="margin-top:14px; border:1px solid #1d4d4f; border-radius:16px; padding:12px; background:#eef7f5;">
+        <div class="label">Owner</div>
+        <h3 style="margin:4px 0 6px;">Управление типами событий</h3>
+        <p class="subtitle">На мобильном список и форма идут друг за другом.</p>
+      </div>
+      <div style="margin-top:12px; border:1px solid #d8d2c4; border-radius:14px; padding:12px; background:white;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+          <strong>Типы событий</strong>
+          <button class="mock-button">+ Создать</button>
+        </div>
+        <div style="display:grid; gap:8px;">
+          <div style="border:1px solid #1d4d4f; border-radius:10px; padding:10px; background:#eef7f5;">
+            <strong>Первичная консультация</strong>
+            <div class="subtitle">30 мин · Активен</div>
+          </div>
+          <div style="border:1px dashed #b7ab90; border-radius:10px; padding:10px; background:#f4efe3;">
+            <strong>Диагностика</strong>
+            <div class="subtitle">45 мин · Архив</div>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:12px; border:1px solid #d8d2c4; border-radius:14px; padding:12px; background:#fffdf8;">
+        <strong>Редактирование: Первичная консультация</strong>
+        <div style="height:10px;"></div>
+        <input class="mock-input" value="Первичная консультация" />
+        <div style="height:10px;"></div>
+        <div class="placeholder" style="height:70px;">Описание</div>
+        <div style="height:10px;"></div>
+        <input class="mock-input" value="30 минут" />
+        <div style="margin-top:10px; padding:10px; border-radius:10px; background:#f9f1dd; font-size:13px;">
+          Использовался в бронированиях. Удаление недоступно.
+        </div>
+        <div style="display:grid; gap:8px; margin-top:12px;">
+          <button class="mock-button">Сохранить</button>
+          <button class="mock-button" style="background:#d9c5a1; color:#3f2f16;">Архивировать</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top:18px;">
+  <div class="pros-cons">
+    <div class="pros">
+      <h4>Что здесь проверяем</h4>
+      <ul>
+        <li>Достаточно ли явно owner page отделена от public flow</li>
+        <li>Понятен ли переход из верхней навигации</li>
+        <li>Не теряется ли форма на mobile</li>
+      </ul>
+    </div>
+    <div class="cons">
+      <h4>Пока вне макета</h4>
+      <ul>
+        <li>Реальная маршрутизация</li>
+        <li>Сохранение через API</li>
+        <li>Живые сообщения о конкурентных изменениях</li>
+      </ul>
+    </div>
+  </div>
+</div>

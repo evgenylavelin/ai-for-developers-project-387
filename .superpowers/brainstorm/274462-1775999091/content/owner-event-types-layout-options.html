@@ -1,0 +1,159 @@
+<h2>Owner Page: Управление Типами Событий</h2>
+<p class="subtitle">Три варианта экрана для CRUD, архивирования использованных типов и будущих live-конфликтов.</p>
+
+<div class="cards">
+  <div class="card" data-choice="split-layout" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mockup">
+        <div class="mockup-header">Вариант A · Список + боковая форма</div>
+        <div class="mockup-body">
+          <div class="mock-nav">Owner / Event Types</div>
+          <div style="display:flex; gap:14px; min-height:320px;">
+            <div style="flex:0 0 42%; border:1px solid #d8d2c4; border-radius:14px; padding:12px; background:#fbf7ef;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <strong>Типы событий</strong>
+                <button class="mock-button">+ Создать</button>
+              </div>
+              <div style="display:grid; gap:10px;">
+                <div style="border:1px solid #1d4d4f; border-radius:12px; padding:10px; background:#eef7f5;">
+                  <strong>Первичная консультация</strong>
+                  <div class="subtitle">30 мин · Активен</div>
+                </div>
+                <div style="border:1px solid #d8d2c4; border-radius:12px; padding:10px; background:white;">
+                  <strong>Разбор кейса</strong>
+                  <div class="subtitle">60 мин · Активен</div>
+                </div>
+                <div style="border:1px dashed #b7ab90; border-radius:12px; padding:10px; background:#f4efe3; opacity:.85;">
+                  <strong>Диагностика</strong>
+                  <div class="subtitle">45 мин · Архив</div>
+                </div>
+              </div>
+            </div>
+            <div style="flex:1; border:1px solid #d8d2c4; border-radius:14px; padding:12px; background:white;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <strong>Редактирование типа</strong>
+                <span class="label">Используется в бронированиях</span>
+              </div>
+              <input class="mock-input" value="Первичная консультация" />
+              <div style="height:10px;"></div>
+              <div class="placeholder" style="height:72px;">Описание</div>
+              <div style="height:10px;"></div>
+              <input class="mock-input" value="30 минут" />
+              <div style="margin-top:12px; padding:10px; border-radius:10px; background:#f9f1dd; font-size:13px;">
+                Удаление недоступно. Этот тип уже использовался и может быть только архивирован.
+              </div>
+              <div style="display:flex; gap:10px; margin-top:14px;">
+                <button class="mock-button">Сохранить</button>
+                <button class="mock-button" style="background:#d9c5a1; color:#3f2f16;">Архивировать</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A. Список + боковая форма</h3>
+      <p>Лучше всего держит CRUD, архивирование и предупреждения о связанных бронированиях.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="table-modal" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mockup">
+        <div class="mockup-header">Вариант B · Таблица + модальное окно</div>
+        <div class="mockup-body">
+          <div class="mock-nav">Owner / Event Types</div>
+          <div style="border:1px solid #d8d2c4; border-radius:14px; padding:12px; background:white;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+              <strong>Типы событий</strong>
+              <button class="mock-button">+ Создать</button>
+            </div>
+            <div style="display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:8px; font-size:13px; color:#6a6254; margin-bottom:8px;">
+              <div>Название</div><div>Длительность</div><div>Статус</div><div>Действия</div>
+            </div>
+            <div style="display:grid; gap:8px;">
+              <div style="display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:8px; align-items:center; padding:10px; border:1px solid #e7dfcf; border-radius:10px;">
+                <div>Первичная консультация</div><div>30 мин</div><div>Активен</div><div>Ред. / Архив</div>
+              </div>
+              <div style="display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:8px; align-items:center; padding:10px; border:1px solid #e7dfcf; border-radius:10px;">
+                <div>Диагностика</div><div>45 мин</div><div>Архив</div><div>Просмотр</div>
+              </div>
+            </div>
+          </div>
+          <div style="position:relative; margin:-240px auto 0; width:68%; border:1px solid #1d4d4f; border-radius:16px; background:#fffdf8; padding:14px; box-shadow:0 18px 40px rgba(0,0,0,.14);">
+            <strong>Редактировать тип события</strong>
+            <div style="height:10px;"></div>
+            <input class="mock-input" value="Первичная консультация" />
+            <div style="height:10px;"></div>
+            <div class="placeholder" style="height:64px;">Описание</div>
+            <div style="height:10px;"></div>
+            <input class="mock-input" value="30 минут" />
+            <div style="margin-top:10px; font-size:13px; color:#7a5d1e;">Используется в бронированиях. Доступно только архивирование.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B. Таблица + модальное окно</h3>
+      <p>Компактно, но конфликтные состояния и объяснение архивирования читаются слабее.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="cards-inline" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mockup">
+        <div class="mockup-header">Вариант C · Карточки + inline edit</div>
+        <div class="mockup-body">
+          <div class="mock-nav">Owner / Event Types</div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+            <div style="border:1px solid #1d4d4f; border-radius:14px; padding:12px; background:#eef7f5;">
+              <strong>Первичная консультация</strong>
+              <p class="subtitle">Короткая стартовая встреча</p>
+              <input class="mock-input" value="30 минут" />
+              <div style="display:flex; gap:8px; margin-top:10px;">
+                <button class="mock-button">Сохранить</button>
+                <button class="mock-button" style="background:#d9c5a1; color:#3f2f16;">Архив</button>
+              </div>
+            </div>
+            <div style="border:1px solid #d8d2c4; border-radius:14px; padding:12px; background:white;">
+              <strong>Разбор кейса</strong>
+              <p class="subtitle">Глубокая сессия на 60 минут</p>
+              <div class="label">Редактировать</div>
+            </div>
+            <div style="border:1px dashed #b7ab90; border-radius:14px; padding:12px; background:#f4efe3;">
+              <strong>Диагностика</strong>
+              <p class="subtitle">Архивный тип, видим для истории</p>
+            </div>
+            <div style="border:1px dashed #d8d2c4; border-radius:14px; padding:12px; background:#fffdf8; display:flex; align-items:center; justify-content:center;">
+              <button class="mock-button">+ Новый тип</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C. Карточки + inline edit</h3>
+      <p>Выглядит выразительно, но быстро шумит и хуже масштабируется при росте типов событий.</p>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top:18px;">
+  <div class="pros-cons">
+    <div class="pros">
+      <h4>На что смотреть</h4>
+      <ul>
+        <li>Насколько легко читать статус: активен, архив, используется в бронированиях</li>
+        <li>Насколько понятно, где создавать, где редактировать и где архивировать</li>
+        <li>Не развалится ли экран, если типов станет 10+</li>
+      </ul>
+    </div>
+    <div class="cons">
+      <h4>Важно для следующего этапа</h4>
+      <ul>
+        <li>Логику слотов и рабочий день пока не показываем</li>
+        <li>Но экран должен выдержать будущие live-обновления и блокировки при конкурентном редактировании</li>
+      </ul>
+    </div>
+  </div>
+</div>
