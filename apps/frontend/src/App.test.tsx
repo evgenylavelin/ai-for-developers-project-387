@@ -36,9 +36,9 @@ function createApiBookingDay() {
   };
 }
 
-function createOwnerEventTypesFetchMock() {
+function createOwnerEventTypesFetchMock(initialOwnerEventTypes?: OwnerEventType[]) {
   const bookingDay = createApiBookingDay();
-  let ownerEventTypes: OwnerEventType[] = [
+  let ownerEventTypes: OwnerEventType[] = initialOwnerEventTypes ?? [
     {
       id: "strategy",
       title: "Стратегическая сессия",
@@ -186,7 +186,7 @@ async function openOwnerEventTypesWorkspace(user: ReturnType<typeof userEvent.se
     }),
   );
 
-  expect(await screen.findByRole("heading", { name: "Управление типами событий" })).toBeInTheDocument();
+  expect(await screen.findByRole("heading", { name: "Типы событий" })).toBeInTheDocument();
 }
 
 describe("App", () => {
@@ -1283,25 +1283,44 @@ describe("App", () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
-  it('opens create mode from "+ Создать тип события" with empty fields and no destructive actions', async () => {
+  it('opens create mode from "+ Создать тип события" with a single create path', async () => {
     const user = userEvent.setup();
+    const { fetchMock } = createOwnerEventTypesFetchMock();
 
-    render(<App scenario="public" />);
+    vi.stubGlobal("fetch", fetchMock);
 
-    await user.click(
-      within(screen.getByRole("navigation", { name: "Разделы приложения" })).getByRole("button", {
-        name: "Типы событий",
-      }),
-    );
+    render(<App />);
+
+    await openOwnerEventTypesWorkspace(user);
+    expect(await screen.findByRole("button", { name: /Короткий созвон/i })).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "+ Создать тип события" }));
 
     expect(screen.getByRole("heading", { name: "Новый тип события" })).toBeInTheDocument();
-    expect(screen.getByLabelText("Название")).toHaveValue("");
-    expect(screen.getByLabelText("Описание")).toHaveValue("");
-    expect(screen.getByLabelText("Длительность")).toHaveValue(null);
+    expect(screen.queryByRole("button", { name: "+ Создать тип события" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Добавить" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Сохранить" })).not.toBeInTheDocument();
+    expect(screen.getByRole("textbox", { name: "Название" })).toHaveValue("");
+    expect(screen.getByRole("textbox", { name: "Описание" })).toHaveValue("");
+    expect(screen.getByRole("spinbutton", { name: "Длительность" })).toHaveValue(null);
     expect(screen.queryByRole("button", { name: "Удалить" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Архивировать" })).not.toBeInTheDocument();
     expect(screen.queryByText(/Подтвердить удаление|Подтвердить архивирование/)).not.toBeInTheDocument();
+  });
+
+  it("shows a passive empty state when no event types exist", async () => {
+    const user = userEvent.setup();
+    const { fetchMock } = createOwnerEventTypesFetchMock([]);
+
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<App />);
+
+    await openOwnerEventTypesWorkspace(user);
+
+    expect(screen.getByText("Типов событий пока нет.")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Создать первый тип" })).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Новый тип события" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Добавить" })).toBeInTheDocument();
   });
 
   it("creates an owner event type through the backend and refreshes public choices", async () => {
@@ -1313,16 +1332,19 @@ describe("App", () => {
     render(<App />);
 
     await openOwnerEventTypesWorkspace(user);
+    expect(await screen.findByRole("button", { name: /Короткий созвон/i })).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "+ Создать тип события" }));
-    await user.type(screen.getByLabelText("Название"), "Новая диагностика");
+    await user.type(screen.getByRole("textbox", { name: "Название" }), "Новая диагностика");
     await user.type(
-      screen.getByLabelText("Описание"),
+      screen.getByRole("textbox", { name: "Описание" }),
       "Проверка текущего состояния и следующих шагов.",
     );
-    await user.type(screen.getByLabelText("Длительность"), "35");
-    await user.click(screen.getByRole("button", { name: "Сохранить" }));
+    await user.type(screen.getByRole("spinbutton", { name: "Длительность" }), "35");
+    await user.click(screen.getByRole("button", { name: "Добавить" }));
 
     expect(await screen.findByText("Тип события создан.")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Сохранить" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "+ Создать тип события" })).toBeInTheDocument();
 
     const eventTypesList = screen.getByRole("list", { name: "Список типов событий" });
     const createdEventType = within(eventTypesList).getByRole("button", { name: /Новая диагностика/i });
@@ -1355,12 +1377,12 @@ describe("App", () => {
 
     await openOwnerEventTypesWorkspace(user);
     await user.click(screen.getByRole("button", { name: /Короткий созвон/i }));
-    await user.clear(screen.getByLabelText("Название"));
-    await user.type(screen.getByLabelText("Название"), "Короткий статус");
-    await user.clear(screen.getByLabelText("Описание"));
-    await user.type(screen.getByLabelText("Описание"), "Обновленный формат быстрой синхронизации.");
-    await user.clear(screen.getByLabelText("Длительность"));
-    await user.type(screen.getByLabelText("Длительность"), "25");
+    await user.clear(screen.getByRole("textbox", { name: "Название" }));
+    await user.type(screen.getByRole("textbox", { name: "Название" }), "Короткий статус");
+    await user.clear(screen.getByRole("textbox", { name: "Описание" }));
+    await user.type(screen.getByRole("textbox", { name: "Описание" }), "Обновленный формат быстрой синхронизации.");
+    await user.clear(screen.getByRole("spinbutton", { name: "Длительность" }));
+    await user.type(screen.getByRole("spinbutton", { name: "Длительность" }), "25");
     await user.click(screen.getByRole("button", { name: "Сохранить" }));
 
     expect(await screen.findByText("Изменения сохранены.")).toBeInTheDocument();

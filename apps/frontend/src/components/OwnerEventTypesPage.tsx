@@ -96,8 +96,10 @@ export function OwnerEventTypesPage({
     setPendingAction(null);
   }, [eventTypes]);
 
+  const isCreateMode = mode === "create";
+  const isEditMode = mode === "edit";
   const selectedEventType =
-    mode === "edit" ? eventTypes.find((eventType) => eventType.id === selectedEventTypeId) ?? null : null;
+    isEditMode ? eventTypes.find((eventType) => eventType.id === selectedEventTypeId) ?? null : null;
 
   const openCreateMode = () => {
     if (submitting) {
@@ -303,9 +305,11 @@ export function OwnerEventTypesPage({
               <div>
                 <p className="bookings-card__eyebrow">Типы событий</p>
               </div>
-              <button type="button" className="secondary-button" onClick={openCreateMode} disabled={submitting}>
-                + Создать тип события
-              </button>
+              {isEditMode ? (
+                <button type="button" className="secondary-button" onClick={openCreateMode} disabled={submitting}>
+                  + Создать тип события
+                </button>
+              ) : null}
             </div>
 
             {loadError ? (
@@ -331,9 +335,6 @@ export function OwnerEventTypesPage({
                   Создайте первый тип события, чтобы подготовить owner workspace к будущей
                   публикации слотов.
                 </p>
-                <button type="button" className="primary-button" onClick={openCreateMode} disabled={submitting}>
-                  Создать первый тип
-                </button>
               </div>
             ) : (
               <ul className="owner-event-type-list" aria-label="Список типов событий">
@@ -371,10 +372,15 @@ export function OwnerEventTypesPage({
             )}
           </section>
 
-          <section className="owner-card owner-form-panel" aria-label="Новый тип события">
+          <section
+            className="owner-card owner-form-panel"
+            aria-label={isCreateMode ? "Новый тип события" : "Редактирование типа события"}
+          >
             <div className="owner-form-panel__header">
               <div>
-                <p className="bookings-card__eyebrow">Новый тип события</p>
+                <h2 className="bookings-card__eyebrow">
+                  {isCreateMode ? "Новый тип события" : "Редактирование типа события"}
+                </h2>
               </div>
               {selectedEventType ? (
                 <div className="owner-status-row owner-status-row--compact">
@@ -485,10 +491,10 @@ export function OwnerEventTypesPage({
 
             <div className="owner-form-actions">
               <button type="button" className="primary-button" onClick={() => void handleSave()} disabled={submitting}>
-                {submitting ? "Сохраняем..." : "Сохранить"}
+                {submitting ? "Сохраняем..." : isCreateMode ? "Добавить" : "Сохранить"}
               </button>
 
-              {mode === "edit" && selectedEventType ? (
+              {isEditMode && selectedEventType ? (
                 <div className="owner-form-actions__secondary">
                   {!selectedEventType.hasBookings ? (
                     <button
