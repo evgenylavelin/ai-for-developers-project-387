@@ -15,6 +15,7 @@ type PublicBookingsHomeProps = {
   availableDatesByEventType: AvailableDatesByEventType;
   calendarDays: CalendarDay[];
   initialSelectedDate?: string;
+  initialSelectedEventTypeId?: string;
   startupWarning?: string;
   bookingsState?: "loading" | "ready" | "error";
   availabilityState?: "idle" | "loading" | "ready" | "error";
@@ -25,7 +26,7 @@ type PublicBookingsHomeProps = {
   onRetryStartup?: () => void;
   onOpenEventTypes?: () => void;
   onCancelBooking: (bookingId: string) => void;
-  onStartBooking: (isoDate: string) => void;
+  onStartBooking: (context: { isoDate: string; eventTypeId?: string }) => void;
 };
 
 function formatInterval(startAt: string, endAt: string): string {
@@ -42,6 +43,7 @@ export function PublicBookingsHome({
   availableDatesByEventType,
   calendarDays,
   initialSelectedDate,
+  initialSelectedEventTypeId,
   startupWarning,
   bookingsState = "ready",
   availabilityState = "ready",
@@ -54,7 +56,9 @@ export function PublicBookingsHome({
   onCancelBooking,
   onStartBooking,
 }: PublicBookingsHomeProps) {
-  const [selectedFilterId, setSelectedFilterId] = useState(ALL_EVENT_TYPES_FILTER);
+  const [selectedFilterId, setSelectedFilterId] = useState(
+    initialSelectedEventTypeId ?? ALL_EVENT_TYPES_FILTER,
+  );
   const [selectedDate, setSelectedDate] = useState(initialSelectedDate ?? calendarDays[0]?.isoDate ?? "");
 
   useEffect(() => {
@@ -65,6 +69,16 @@ export function PublicBookingsHome({
       setSelectedFilterId(ALL_EVENT_TYPES_FILTER);
     }
   }, [eventTypes, selectedFilterId]);
+
+  useEffect(() => {
+    if (!initialSelectedEventTypeId) {
+      return;
+    }
+
+    setSelectedFilterId((currentFilterId) =>
+      currentFilterId === initialSelectedEventTypeId ? currentFilterId : initialSelectedEventTypeId,
+    );
+  }, [initialSelectedEventTypeId]);
 
   useEffect(() => {
     const hasInitialSelectedDate = Boolean(
@@ -272,7 +286,14 @@ export function PublicBookingsHome({
               className="primary-button"
               aria-describedby={isBookingEntryDisabled ? "booking-entry-guard" : undefined}
               disabled={isBookingEntryDisabled}
-              onClick={() => selectedDay && onStartBooking(selectedDay.isoDate)}
+              onClick={() =>
+                selectedDay &&
+                onStartBooking({
+                  isoDate: selectedDay.isoDate,
+                  eventTypeId:
+                    selectedFilterId === ALL_EVENT_TYPES_FILTER ? undefined : selectedFilterId,
+                })
+              }
             >
               Записаться
             </button>

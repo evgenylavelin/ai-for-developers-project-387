@@ -19,9 +19,11 @@ type GuestBookingPageProps = {
   eventTypes: EventType[];
   datesByEventType: AvailableDatesByEventType;
   initialSelectedDate?: string;
+  initialSelectedEventTypeId?: string;
   successActionLabel?: string;
   onBookingSubmit?: (draft: BookingDraft) => Promise<void>;
   onSuccessAction?: () => void;
+  onExit?: () => void;
 };
 
 function resolveDates(
@@ -40,17 +42,24 @@ export function GuestBookingPage({
   eventTypes,
   datesByEventType,
   initialSelectedDate,
+  initialSelectedEventTypeId,
   successActionLabel,
   onBookingSubmit,
   onSuccessAction,
+  onExit,
 }: GuestBookingPageProps) {
-  const entryState = deriveEntryState(eventTypes);
-  const startsWithEventType = entryState.kind === "choose-event-type";
+  const entryState = deriveEntryState(eventTypes, initialSelectedEventTypeId);
+  const isThreeStepFlow =
+    entryState.kind === "choose-event-type" || entryState.kind === "prefilled-public-booking";
+  const startsOnDateTime =
+    entryState.kind === "direct-booking" || entryState.kind === "prefilled-public-booking";
   const [currentScreen, setCurrentScreen] = useState<
     "event-type" | "date-time" | "contacts" | "success"
-  >(startsWithEventType ? "event-type" : "date-time");
+  >(startsOnDateTime ? "date-time" : "event-type");
   const [selectedEventTypeId, setSelectedEventTypeId] = useState(
-    entryState.kind === "direct-booking" ? entryState.presetEventType.id : "",
+    entryState.kind === "direct-booking" || entryState.kind === "prefilled-public-booking"
+      ? entryState.presetEventType.id
+      : "",
   );
   const currentDates = resolveDates(entryState, datesByEventType, selectedEventTypeId);
   const [selectedDate, setSelectedDate] = useState(initialSelectedDate ?? currentDates[0]?.isoDate ?? "");
@@ -93,7 +102,7 @@ export function GuestBookingPage({
       return;
     }
 
-    if (entryState.kind === "choose-event-type") {
+    if (entryState.kind === "choose-event-type" || entryState.kind === "prefilled-public-booking") {
       const eventTypeExists = eventTypes.some((eventType) => eventType.id === selectedEventTypeId);
 
       if (!eventTypeExists && selectedEventTypeId) {
@@ -121,7 +130,7 @@ export function GuestBookingPage({
     currentScreen === "event-type"
       ? []
       : currentScreen === "date-time"
-        ? startsWithEventType && selectedEventType?.title
+        ? isThreeStepFlow && selectedEventType?.title
           ? [selectedEventType.title]
           : []
         : buildStepSummaryParts({
@@ -130,11 +139,17 @@ export function GuestBookingPage({
             timeLabel: selectedTime || undefined,
           });
   const restartBookingFlow = () => {
-    setSelectedEventTypeId(entryState.kind === "direct-booking" ? entryState.presetEventType.id : "");
+    setSelectedEventTypeId(
+      entryState.kind === "direct-booking" || entryState.kind === "prefilled-public-booking"
+        ? entryState.presetEventType.id
+        : "",
+    );
     const nextDates = resolveDates(
       entryState,
       datesByEventType,
-      entryState.kind === "direct-booking" ? entryState.presetEventType.id : "",
+      entryState.kind === "direct-booking" || entryState.kind === "prefilled-public-booking"
+        ? entryState.presetEventType.id
+        : "",
     );
     const nextSelectedDate =
       initialSelectedDate && nextDates.some((date) => date.isoDate === initialSelectedDate)
@@ -148,7 +163,7 @@ export function GuestBookingPage({
     setSuccessSummary("");
     setSubmissionError("");
     setIsSubmitting(false);
-    setCurrentScreen(startsWithEventType ? "event-type" : "date-time");
+    setCurrentScreen(startsOnDateTime ? "date-time" : "event-type");
   };
 
   if (currentScreen === "success") {
@@ -165,15 +180,14 @@ export function GuestBookingPage({
     currentScreen === "event-type"
       ? 0
       : currentScreen === "date-time"
-        ? startsWithEventType
+        ? isThreeStepFlow
           ? 1
           : 0
-        : startsWithEventType
+        : isThreeStepFlow
           ? 2
           : 1;
   const canContinue =
     currentScreen === "event-type" ? Boolean(selectedEventTypeId) : Boolean(selectedTime);
-  const canGoBack = currentScreen === "date-time" ? startsWithEventType : currentScreen === "contacts";
   const heading =
     currentScreen === "event-type"
       ? "Выберите тип встречи"
@@ -186,6 +200,26 @@ export function GuestBookingPage({
       : currentScreen === "date-time"
         ? "Выберите свободный слот на ближайшие 14 дней."
         : "Укажите имя и email для подтверждения бронирования.";
+  const handleBack = () => {
+    setSubmissionError("");
+
+    if (currentScreen === "contacts") {
+      setCurrentScreen("date-time");
+      return;
+    }
+
+    if (currentScreen === "date-time") {
+      if (isThreeStepFlow) {
+        setCurrentScreen("event-type");
+        return;
+      }
+
+      onExit?.();
+      return;
+    }
+
+    onExit?.();
+  };
 
   const submit = async () => {
     const trimmedName = name.trim();
@@ -238,7 +272,15 @@ export function GuestBookingPage({
           eventTypes={eventTypes}
           selectedEventTypeId={selectedEventTypeId}
           onSelect={(eventTypeId) => {
+            const didEventTypeChange = eventTypeId !== selectedEventTypeId;
+
             setSelectedEventTypeId(eventTypeId);
+            setSubmissionError("");
+
+            if (!didEventTypeChange) {
+              return;
+            }
+
             const nextDates = datesByEventType[eventTypeId] ?? [];
             const nextSelectedDate =
               initialSelectedDate && nextDates.some((date) => date.isoDate === initialSelectedDate)
@@ -247,7 +289,6 @@ export function GuestBookingPage({
 
             setSelectedDate(nextSelectedDate);
             setSelectedTime("");
-            setSubmissionError("");
           }}
         />
       ) : currentScreen === "date-time" ? (
@@ -285,20 +326,9 @@ export function GuestBookingPage({
         />
       )}
       <div className="actions">
-        {canGoBack ? (
-          <button
-            type="button"
-            className="secondary-button"
-            onClick={() => {
-              setSubmissionError("");
-              setCurrentScreen(currentScreen === "contacts" ? "date-time" : "event-type");
-            }}
-          >
-            Назад
-          </button>
-        ) : (
-          <span />
-        )}
+        <button type="button" className="secondary-button" onClick={handleBack}>
+          Назад
+        </button>
         {currentScreen === "contacts" ? (
           <button type="button" className="primary-button" disabled={isSubmitting} onClick={() => void submit()}>
             {isSubmitting ? "Сохраняем..." : "Подтвердить"}

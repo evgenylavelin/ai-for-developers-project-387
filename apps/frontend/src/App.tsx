@@ -156,6 +156,9 @@ export default function App({ scenario }: AppProps) {
   const [selectedHomeDate, setSelectedHomeDate] = useState(
     scenarioData ? getInitialSelectedDate(scenarioData.schedule, scenarioData.bookings) : "",
   );
+  const [selectedPublicBookingEventTypeId, setSelectedPublicBookingEventTypeId] = useState<
+    string | undefined
+  >(undefined);
 
   useEffect(() => {
     if (!isScenarioMode) {
@@ -184,6 +187,7 @@ export default function App({ scenario }: AppProps) {
     setScreen(resolveInitialScreen(nextScenarioData));
     setSuccessDestination(nextScenarioData.bookings.length > 0 ? "home" : "restart");
     setSelectedHomeDate(getInitialSelectedDate(nextScenarioData.schedule, nextScenarioData.bookings));
+    setSelectedPublicBookingEventTypeId(undefined);
   }, [isScenarioMode, scenario]);
 
   useEffect(() => {
@@ -282,6 +286,7 @@ export default function App({ scenario }: AppProps) {
         setScreen("home");
         setSuccessDestination("home");
         setSelectedHomeDate(getInitialSelectedDate(remoteCalendarDays, loadedBookings));
+        setSelectedPublicBookingEventTypeId(undefined);
 
         void getOwnerEventTypes()
           .then((loadedOwnerEventTypes) => {
@@ -567,6 +572,7 @@ export default function App({ scenario }: AppProps) {
                 availableDatesByEventType={datesByEventType}
                 calendarDays={calendarDays}
                 initialSelectedDate={selectedHomeDate}
+                initialSelectedEventTypeId={selectedPublicBookingEventTypeId}
                 startupWarning={publicStartupWarning}
                 bookingsState={publicLoadStatuses.bookings}
                 availabilityState={publicLoadStatuses.availability}
@@ -598,8 +604,9 @@ export default function App({ scenario }: AppProps) {
                       );
                     });
                 }}
-                onStartBooking={(isoDate) => {
+                onStartBooking={({ isoDate, eventTypeId }) => {
                   setSelectedHomeDate(isoDate);
+                  setSelectedPublicBookingEventTypeId(eventTypeId);
                   setSuccessDestination("home");
                   setScreen("booking");
                 }}
@@ -609,6 +616,7 @@ export default function App({ scenario }: AppProps) {
                 eventTypes={guestEventTypes}
                 datesByEventType={datesByEventType}
                 initialSelectedDate={selectedHomeDate}
+                initialSelectedEventTypeId={selectedPublicBookingEventTypeId}
                 successActionLabel={
                   successDestination === "home" ? "Вернуться к бронированиям" : undefined
                 }
@@ -633,6 +641,9 @@ export default function App({ scenario }: AppProps) {
                       }
                     : undefined
                 }
+                onExit={() => {
+                  setScreen("home");
+                }}
               />
             )
           ) : workspace === "owner-event-types" ? (

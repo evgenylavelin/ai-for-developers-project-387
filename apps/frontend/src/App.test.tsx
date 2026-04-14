@@ -1207,6 +1207,47 @@ describe("App", () => {
     expect(screen.getByText("Пятница, 17 апреля")).toBeInTheDocument();
   });
 
+  it("opens the booking flow on date and time when a public event type filter is already selected", async () => {
+    const user = userEvent.setup();
+
+    render(<App scenario="public" />);
+
+    await user.click(screen.getByRole("button", { name: "Пятница, 17 апреля" }));
+    await user.click(screen.getByRole("button", { name: "Короткий созвон, 15 мин" }));
+    await user.click(screen.getByRole("button", { name: "Записаться" }));
+
+    expect(screen.getByRole("heading", { name: "Выберите дату и время" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Назад" })).toBeInTheDocument();
+    expect(screen.getByText("Короткий созвон")).toBeInTheDocument();
+    expect(screen.getByText("Пятница, 17 апреля")).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Выберите тип встречи" })).not.toBeInTheDocument();
+  });
+
+  it("returns from the prefilled date step to event type selection and then back to public bookings", async () => {
+    const user = userEvent.setup();
+
+    render(<App scenario="public" />);
+
+    await user.click(screen.getByRole("button", { name: "Пятница, 17 апреля" }));
+    await user.click(screen.getByRole("button", { name: "Короткий созвон, 15 мин" }));
+    await user.click(screen.getByRole("button", { name: "Записаться" }));
+    await user.click(screen.getByRole("button", { name: "Назад" }));
+
+    expect(screen.getByRole("heading", { name: "Выберите тип встречи" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Назад" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Короткий созвон" })).toHaveClass(
+      "choice-card--selected",
+    );
+
+    await user.click(screen.getByRole("button", { name: "Назад" }));
+
+    expect(screen.getByRole("heading", { name: "Бронирования" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Короткий созвон, 15 мин" })).toHaveClass(
+      "filter-chip--active",
+    );
+    expect(screen.getByText("Пятница, 17 апреля")).toBeInTheDocument();
+  });
+
   it("shows an inline error when contact data is incomplete", async () => {
     const user = userEvent.setup();
 
