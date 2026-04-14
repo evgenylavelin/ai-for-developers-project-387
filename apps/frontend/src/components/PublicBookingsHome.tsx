@@ -23,6 +23,7 @@ type PublicBookingsHomeProps = {
   workspace: Workspace;
   onChangeWorkspace: (workspace: Workspace) => void;
   onRetryStartup?: () => void;
+  onOpenEventTypes?: () => void;
   onCancelBooking: (bookingId: string) => void;
   onStartBooking: (isoDate: string) => void;
 };
@@ -49,6 +50,7 @@ export function PublicBookingsHome({
   workspace,
   onChangeWorkspace,
   onRetryStartup,
+  onOpenEventTypes,
   onCancelBooking,
   onStartBooking,
 }: PublicBookingsHomeProps) {
@@ -98,6 +100,8 @@ export function PublicBookingsHome({
   const isBookingEntryDisabled = Boolean(bookingEntryDisabledReason);
   const isBookingsKnown = bookingsState === "ready";
   const isAvailabilityKnown = availabilityState === "ready";
+  const showsMissingEventTypesOnboarding =
+    eventTypes.length === 0 && !startupWarning && bookingsState !== "loading" && availabilityState !== "loading";
 
   return (
     <section className="workspace-page bookings-home">
@@ -130,6 +134,28 @@ export function PublicBookingsHome({
         </section>
       ) : null}
 
+      {showsMissingEventTypesOnboarding ? (
+        <section className="bookings-card bookings-home__empty-state">
+          <div>
+            <p className="bookings-card__eyebrow">Подготовка календаря</p>
+            <h2>Добавьте тип события, чтобы открыть запись</h2>
+          </div>
+          <p className="panel-copy bookings-home__empty-copy">
+            Пока у календаря нет активных типов событий, гости не смогут выбрать встречу и записаться
+            на свободный слот.
+          </p>
+          <div className="bookings-home__empty-actions">
+            <button
+              type="button"
+              className="primary-button"
+              onClick={onOpenEventTypes ?? (() => onChangeWorkspace("owner-event-types"))}
+            >
+              Перейти к типам событий
+            </button>
+          </div>
+        </section>
+      ) : (
+        <>
       <div className="filter-row" role="toolbar" aria-label="Фильтр по типу встречи">
         <button
           type="button"
@@ -322,6 +348,8 @@ export function PublicBookingsHome({
           )}
         </section>
       </div>
+        </>
+      )}
     </section>
   );
 }

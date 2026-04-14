@@ -30,6 +30,7 @@ import {
   getScenarioData,
   getScenarioOwnerEventTypes,
   type AppScenario,
+  type ScenarioData,
 } from "./lib/appScenarios";
 import type {
   AvailabilityByEventType,
@@ -106,13 +107,29 @@ function removeAvailabilityEntry(
   return nextAvailability;
 }
 
+function resolveInitialWorkspace(guestEventTypes: EventType[]): Workspace {
+  return guestEventTypes.length === 0 ? "owner-event-types" : "public";
+}
+
+function resolveInitialScreen(scenarioData: ScenarioData | null): "home" | "booking" {
+  if (!scenarioData) {
+    return "home";
+  }
+
+  return scenarioData.bookings.length > 0 || scenarioData.eventTypes.length === 0 ? "home" : "booking";
+}
+
 export default function App({ scenario }: AppProps) {
   const isScenarioMode = scenario !== undefined;
   const scenarioData = isScenarioMode ? getScenarioData(scenario) : null;
-  const [workspace, setWorkspace] = useState<Workspace>("public");
+  const initialScenarioOwnerEventTypes =
+    scenarioData && scenario === "none" ? [] : scenarioData ? getScenarioOwnerEventTypes() : [];
+  const [workspace, setWorkspace] = useState<Workspace>(
+    scenarioData ? resolveInitialWorkspace(scenarioData.eventTypes) : "public",
+  );
   const [guestEventTypes, setGuestEventTypes] = useState<EventType[]>(scenarioData?.eventTypes ?? []);
   const [ownerEventTypes, setOwnerEventTypes] = useState<OwnerEventType[]>(
-    scenarioData ? getScenarioOwnerEventTypes() : [],
+    initialScenarioOwnerEventTypes,
   );
   const [bookings, setBookings] = useState<Booking[]>(scenarioData?.bookings ?? []);
   const [availabilityByEventType, setAvailabilityByEventType] = useState<AvailabilityByEventType>(
@@ -132,9 +149,7 @@ export default function App({ scenario }: AppProps) {
   const [ownerEventTypesError, setOwnerEventTypesError] = useState("");
   const [actionError, setActionError] = useState("");
   const [reloadToken, setReloadToken] = useState(0);
-  const [screen, setScreen] = useState<"home" | "booking">(
-    scenarioData ? (scenarioData.bookings.length ? "home" : "booking") : "home",
-  );
+  const [screen, setScreen] = useState<"home" | "booking">(resolveInitialScreen(scenarioData));
   const [successDestination, setSuccessDestination] = useState<"restart" | "home">(
     scenarioData?.bookings.length ? "home" : "restart",
   );
@@ -148,10 +163,11 @@ export default function App({ scenario }: AppProps) {
     }
 
     const nextScenarioData = getScenarioData(scenario);
+    const nextScenarioOwnerEventTypes = scenario === "none" ? [] : getScenarioOwnerEventTypes();
 
-    setWorkspace("public");
+    setWorkspace(resolveInitialWorkspace(nextScenarioData.eventTypes));
     setGuestEventTypes(nextScenarioData.eventTypes);
-    setOwnerEventTypes(getScenarioOwnerEventTypes());
+    setOwnerEventTypes(nextScenarioOwnerEventTypes);
     setBookings(nextScenarioData.bookings);
     setAvailabilityByEventType(
       buildScenarioAvailability(nextScenarioData.schedule, nextScenarioData.eventTypes),
@@ -165,7 +181,7 @@ export default function App({ scenario }: AppProps) {
     });
     setOwnerEventTypesError("");
     setActionError("");
-    setScreen(nextScenarioData.bookings.length > 0 ? "home" : "booking");
+    setScreen(resolveInitialScreen(nextScenarioData));
     setSuccessDestination(nextScenarioData.bookings.length > 0 ? "home" : "restart");
     setSelectedHomeDate(getInitialSelectedDate(nextScenarioData.schedule, nextScenarioData.bookings));
   }, [isScenarioMode, scenario]);
@@ -275,6 +291,12 @@ export default function App({ scenario }: AppProps) {
 
             setOwnerEventTypes(loadedOwnerEventTypes);
             setOwnerEventTypesError("");
+
+            if (nextStatuses.eventTypes === "ready" && loadedGuestEventTypes.length === 0) {
+              setWorkspace((currentWorkspace) =>
+                currentWorkspace === "public" ? "owner-event-types" : currentWorkspace,
+              );
+            }
           })
           .catch((error) => {
             if (!alive) {
@@ -555,6 +577,7 @@ export default function App({ scenario }: AppProps) {
                 onRetryStartup={
                   isScenarioMode ? undefined : () => setReloadToken((currentToken) => currentToken + 1)
                 }
+                onOpenEventTypes={() => setWorkspace("owner-event-types")}
                 onCancelBooking={(bookingId) => {
                   if (isScenarioMode) {
                     setBookings((currentBookings) => cancelPublicBooking(currentBookings, bookingId));

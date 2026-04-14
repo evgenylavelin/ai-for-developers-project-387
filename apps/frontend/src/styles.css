@@ -274,6 +274,30 @@ select {
   gap: 20px;
 }
 
+.bookings-home__empty-state {
+  display: grid;
+  gap: 18px;
+  padding: 32px;
+}
+
+.bookings-home__empty-state h2 {
+  margin: 0;
+  max-width: 16ch;
+  font-size: clamp(1.8rem, 3vw, 2.4rem);
+  line-height: 1.08;
+}
+
+.bookings-home__empty-copy {
+  margin: 0;
+  max-width: 56ch;
+}
+
+.bookings-home__empty-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
 .bookings-card {
   padding: 24px;
 }

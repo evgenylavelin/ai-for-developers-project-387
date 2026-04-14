@@ -7,11 +7,13 @@ import { GuestBookingPage } from "./components/GuestBookingPage";
 import { bookingSchedule, multiEventTypes, singleEventType } from "./data/mockGuestFlow";
 import { buildPublicCalendarDays } from "./lib/publicCalendar";
 import { buildAvailableDatesFromSchedule } from "./lib/publicBookings";
+import { resetScheduleCache } from "./lib/scheduleApi";
 import type { OwnerEventType } from "./types";
 
 afterEach(() => {
   vi.useRealTimers();
   vi.unstubAllGlobals();
+  resetScheduleCache();
 });
 
 function createJsonResponse(payload: unknown, init?: ResponseInit): Response {
@@ -178,7 +180,13 @@ function createOwnerEventTypesFetchMock(initialOwnerEventTypes?: OwnerEventType[
 }
 
 async function openOwnerEventTypesWorkspace(user: ReturnType<typeof userEvent.setup>) {
-  expect(await screen.findByRole("heading", { name: "Бронирования" })).toBeInTheDocument();
+  const currentHeading = await screen.findByRole("heading", {
+    name: /^(Бронирования|Типы событий)$/,
+  });
+
+  if (currentHeading.textContent === "Типы событий") {
+    return;
+  }
 
   await user.click(
     within(screen.getByRole("navigation", { name: "Разделы приложения" })).getByRole("button", {
@@ -190,12 +198,24 @@ async function openOwnerEventTypesWorkspace(user: ReturnType<typeof userEvent.se
 }
 
 describe("App", () => {
-  it("renders the unavailable state when there are no event types", () => {
+  it("opens owner event types on first run and shows onboarding on bookings when there are no event types", async () => {
+    const user = userEvent.setup();
+
     render(<App scenario="none" />);
 
+    expect(screen.getByRole("heading", { name: "Типы событий" })).toBeInTheDocument();
+
+    await user.click(
+      within(screen.getByRole("navigation", { name: "Разделы рабочего пространства" })).getByRole("button", {
+        name: "Бронирования",
+      }),
+    );
+
+    expect(await screen.findByRole("heading", { name: "Бронирования" })).toBeInTheDocument();
     expect(
-      screen.getByRole("heading", { name: "Запись пока недоступна" }),
+      screen.getByRole("heading", { name: "Добавьте тип события, чтобы открыть запись" }),
     ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Перейти к типам событий" })).toBeInTheDocument();
   });
 
   it("opens the public bookings home when bookings already exist", () => {
@@ -268,6 +288,48 @@ describe("App", () => {
     expect(fetchMock).toHaveBeenCalledWith("/owner/event-types");
     expect(fetchMock).toHaveBeenCalledWith("/bookings");
     expect(fetchMock).toHaveBeenCalledWith("/event-types/standard/availability");
+  });
+
+  it("opens owner event types after remote startup when there are no public event types", async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.fn((input: RequestInfo | URL) => {
+      const url = String(input);
+
+      if (url.endsWith("/owner/event-types")) {
+        return Promise.resolve(createJsonResponse([]));
+      }
+
+      if (url.endsWith("/event-types")) {
+        return Promise.resolve(createJsonResponse([]));
+      }
+
+      if (url.endsWith("/bookings")) {
+        return Promise.resolve(createJsonResponse([]));
+      }
+
+      throw new Error(`Unexpected request: ${url}`);
+    });
+
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<App />);
+
+    expect(await screen.findByRole("heading", { name: "Типы событий" })).toBeInTheDocument();
+
+    await user.click(
+      within(screen.getByRole("navigation", { name: "Разделы рабочего пространства" })).getByRole("button", {
+        name: "Бронирования",
+      }),
+    );
+
+    expect(await screen.findByRole("heading", { name: "Бронирования" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Добавьте тип события, чтобы открыть запись" }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Перейти к типам событий" })).toBeInTheDocument();
+    expect(fetchMock).toHaveBeenCalledWith("/event-types");
+    expect(fetchMock).toHaveBeenCalledWith("/owner/event-types");
+    expect(fetchMock).toHaveBeenCalledWith("/bookings");
   });
 
   it("keeps public startup available when owner event types fail to load", async () => {
@@ -422,7 +484,7 @@ describe("App", () => {
 
     expect(await screen.findByRole("heading", { name: "Бронирования" })).toBeInTheDocument();
     expect(await screen.findByText("Иван Петров")).toBeInTheDocument();
-    expect(screen.getByText("Часть данных не удалось загрузить.")).toBeInTheDocument();
+    expect(await screen.findByText("Часть данных не удалось загрузить.")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Записаться" })).toBeDisabled();
     expect(
       screen.getByText("Запись временно недоступна: не удалось загрузить типы событий."),
@@ -479,7 +541,7 @@ describe("App", () => {
     render(<App />);
 
     expect(await screen.findByRole("heading", { name: "Бронирования" })).toBeInTheDocument();
-    expect(screen.getByText("Часть данных не удалось загрузить.")).toBeInTheDocument();
+    expect(await screen.findByText("Часть данных не удалось загрузить.")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Записаться" })).toBeDisabled();
     expect(
       screen.getByText("Запись временно недоступна: не удалось загрузить доступные слоты."),
@@ -786,8 +848,8 @@ describe("App", () => {
     await user.click(screen.getByRole("button", { name: bookingDay.shortLabel }));
     await user.click(screen.getByRole("button", { name: "10:30" }));
     await user.click(screen.getByRole("button", { name: "Далее" }));
-    await user.type(screen.getByLabelText("Имя"), "Мария");
-    await user.type(screen.getByLabelText("Email"), "maria@example.com");
+    await user.type(screen.getByRole("textbox", { name: "Имя" }), "Мария");
+    await user.type(screen.getByRole("textbox", { name: "Email" }), "maria@example.com");
     await user.click(screen.getByRole("button", { name: "Подтвердить" }));
 
     expect(
@@ -873,8 +935,8 @@ describe("App", () => {
     await user.click(screen.getByRole("button", { name: bookingDay.shortLabel }));
     await user.click(screen.getByRole("button", { name: "10:30" }));
     await user.click(screen.getByRole("button", { name: "Далее" }));
-    await user.type(screen.getByLabelText("Имя"), "Иван");
-    await user.type(screen.getByLabelText("Email"), "ivan@example.com");
+    await user.type(screen.getByRole("textbox", { name: "Имя" }), "Иван");
+    await user.type(screen.getByRole("textbox", { name: "Email" }), "ivan@example.com");
     await user.click(screen.getByRole("button", { name: "Подтвердить" }));
 
     expect(await screen.findByText("Слот уже занят.")).toBeInTheDocument();
@@ -1166,8 +1228,8 @@ describe("App", () => {
 
     await user.click(screen.getByRole("button", { name: "10:30" }));
     await user.click(screen.getByRole("button", { name: "Далее" }));
-    await user.type(screen.getByLabelText("Имя"), "Иван");
-    await user.type(screen.getByLabelText("Email"), "ivan@example.com");
+    await user.type(screen.getByRole("textbox", { name: "Имя" }), "Иван");
+    await user.type(screen.getByRole("textbox", { name: "Email" }), "ivan@example.com");
     await user.click(screen.getByRole("button", { name: "Подтвердить" }));
 
     expect(
@@ -1188,8 +1250,8 @@ describe("App", () => {
     await user.click(screen.getByRole("button", { name: "Далее" }));
     await user.click(screen.getByRole("button", { name: "09:00" }));
     await user.click(screen.getByRole("button", { name: "Далее" }));
-    await user.type(screen.getByLabelText("Имя"), "Мария");
-    await user.type(screen.getByLabelText("Email"), "maria@example.com");
+    await user.type(screen.getByRole("textbox", { name: "Имя" }), "Мария");
+    await user.type(screen.getByRole("textbox", { name: "Email" }), "maria@example.com");
     await user.click(screen.getByRole("button", { name: "Подтвердить" }));
     await user.click(screen.getByRole("button", { name: "Вернуться к бронированиям" }));
 
@@ -1207,8 +1269,8 @@ describe("App", () => {
     await user.click(screen.getByRole("button", { name: "Далее" }));
     await user.click(screen.getByRole("button", { name: "09:00" }));
     await user.click(screen.getByRole("button", { name: "Далее" }));
-    await user.type(screen.getByLabelText("Имя"), "Иван");
-    await user.type(screen.getByLabelText("Email"), "ivan@example.com");
+    await user.type(screen.getByRole("textbox", { name: "Имя" }), "Иван");
+    await user.type(screen.getByRole("textbox", { name: "Email" }), "ivan@example.com");
     await user.click(screen.getByRole("button", { name: "Подтвердить" }));
     await user.click(screen.getByRole("button", { name: "Вернуться в начало" }));
 
@@ -1246,7 +1308,7 @@ describe("App", () => {
 
     await user.click(within(workspaceNav).getByRole("button", { name: "Настройки" }));
 
-    expect(await screen.findByRole("heading", { name: "Рабочее расписание" })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Настройки" })).toBeInTheDocument();
     expect(screen.getByDisplayValue("09:00")).toBeInTheDocument();
     expect(screen.getByDisplayValue("18:00")).toBeInTheDocument();
     expect(fetchMock).toHaveBeenCalledTimes(1);
@@ -1279,7 +1341,7 @@ describe("App", () => {
       }),
     );
 
-    expect(await screen.findByRole("heading", { name: "Рабочее расписание" })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Настройки" })).toBeInTheDocument();
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
