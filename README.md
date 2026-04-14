@@ -136,7 +136,7 @@ make dev
 
 В режиме разработки frontend проксирует API-запросы `'/schedule'`, `'/event-types'`, `'/owner/event-types'` и `'/bookings'`
 на backend по адресу `http://localhost:3001`. Если backend запущен на другом адресе, задайте
-`VITE_API_BASE_URL`.
+`VITE_API_PROXY_TARGET` перед запуском `npm run frontend:dev`.
 
 Хранилище backend остается in-memory: после перезапуска сервера расписание, типы событий и
 бронирования сбрасываются.
@@ -170,6 +170,15 @@ npm run backend:build
 ```bash
 npm run backend:test -- --run
 ```
+
+Запуск браузерных e2e-тестов Playwright:
+
+```bash
+npm run e2e:install
+npm run e2e:test
+```
+
+Playwright-спеки находятся в `tests/e2e/` и поднимают frontend и backend вместе через общий root-level harness.
 
 ---
 

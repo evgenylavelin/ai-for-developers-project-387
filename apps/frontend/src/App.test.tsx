@@ -939,6 +939,7 @@ describe("App", () => {
     await user.click(screen.getByRole("button", { name: "Вернуться к бронированиям" }));
 
     expect(await screen.findByRole("heading", { name: "Бронирования" })).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: bookingDay.fullLabel }));
     expect(await screen.findByText("Мария")).toBeInTheDocument();
     expect(
       within(screen.getByRole("button", { name: bookingDay.fullLabel })).getByText("2 занято"),
@@ -1558,8 +1559,8 @@ describe("App", () => {
     expect(screen.queryByRole("button", { name: "Сохранить" })).not.toBeInTheDocument();
     expect(screen.getByRole("textbox", { name: "Название" })).toHaveValue("");
     expect(screen.getByRole("textbox", { name: "Описание" })).toHaveValue("");
-    expect(screen.getByRole("spinbutton", { name: "Длительность" })).toHaveValue(null);
-    expect(screen.getByRole("spinbutton", { name: "Длительность" })).toHaveAttribute("max", "360");
+    expect(screen.getByRole("spinbutton", { name: "Длительность (мин)" })).toHaveValue(null);
+    expect(screen.getByRole("spinbutton", { name: "Длительность (мин)" })).toHaveAttribute("max", "360");
     expect(screen.queryByRole("button", { name: "Удалить" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Архивировать" })).not.toBeInTheDocument();
     expect(screen.queryByText(/Подтвердить удаление|Подтвердить архивирование/)).not.toBeInTheDocument();
@@ -1597,7 +1598,7 @@ describe("App", () => {
       screen.getByRole("textbox", { name: "Описание" }),
       "Проверка текущего состояния и следующих шагов.",
     );
-    await user.type(screen.getByRole("spinbutton", { name: "Длительность" }), "35");
+    await user.type(screen.getByRole("spinbutton", { name: "Длительность (мин)" }), "35");
     await user.click(screen.getByRole("button", { name: "Добавить" }));
 
     expect(await screen.findByText("Тип события создан.")).toBeInTheDocument();
@@ -1639,8 +1640,8 @@ describe("App", () => {
     await user.type(screen.getByRole("textbox", { name: "Название" }), "Короткий статус");
     await user.clear(screen.getByRole("textbox", { name: "Описание" }));
     await user.type(screen.getByRole("textbox", { name: "Описание" }), "Обновленный формат быстрой синхронизации.");
-    await user.clear(screen.getByRole("spinbutton", { name: "Длительность" }));
-    await user.type(screen.getByRole("spinbutton", { name: "Длительность" }), "25");
+    await user.clear(screen.getByRole("spinbutton", { name: "Длительность (мин)" }));
+    await user.type(screen.getByRole("spinbutton", { name: "Длительность (мин)" }), "25");
     await user.click(screen.getByRole("button", { name: "Сохранить" }));
 
     expect(await screen.findByText("Изменения сохранены.")).toBeInTheDocument();

@@ -7,3 +7,7 @@ dist/
 
 # Dependency directories
 node_modules/
+
+# Playwright artifacts
+playwright-report/
+test-results/

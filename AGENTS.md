@@ -83,6 +83,13 @@ npm run backend:build
 npm run backend:test -- --run
 ```
 
+Root-level browser e2e commands are available once Playwright is configured:
+
+```bash
+npm run e2e:install
+npm run e2e:test
+```
+
 Useful basic commands:
 
 ```bash
@@ -100,18 +107,24 @@ If you introduce new tooling:
 
 ## Testing
 
-Currently, validation is performed via GitHub Actions on each push:
+Validation is performed in GitHub Actions on each push and pull request:
 
 * workflow: `.github/workflows/hexlet-check.yml`
-* trigger: every push
+* workflow: `.github/workflows/e2e.yml`
 
-There are no local test commands yet.
+Local test commands are available once the corresponding app dependencies are installed:
+
+* `npm run backend:test -- --run`
+* `npm run frontend:test -- --run`
+* `npm run e2e:test`
 
 When tests are added:
 
 * place them near the relevant app or in `tests/`
 * name them after behavior (e.g., `booking-slots.test.*`)
 * document how to run them locally
+
+Browser integration tests live in `tests/e2e/` and should prepare backend state through public HTTP APIs rather than in-process repository mutations.
 
 When frontend tests are present:
 

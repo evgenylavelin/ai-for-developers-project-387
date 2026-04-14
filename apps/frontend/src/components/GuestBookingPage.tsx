@@ -127,6 +127,7 @@ export function GuestBookingPage({
   const [email, setEmail] = useState(storedContacts.email);
   const [submissionError, setSubmissionError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [successGuestEmail, setSuccessGuestEmail] = useState("");
   const [successSummary, setSuccessSummary] = useState("");
 
   useEffect(() => {
@@ -225,6 +226,7 @@ export function GuestBookingPage({
     setSelectedTime("");
   setName(persistedContacts.name);
   setEmail(persistedContacts.email);
+    setSuccessGuestEmail("");
     setSuccessSummary("");
     setSubmissionError("");
     setIsSubmitting(false);
@@ -235,6 +237,7 @@ export function GuestBookingPage({
     return (
       <SuccessState
         actionLabel={successActionLabel}
+        guestEmail={successGuestEmail}
         summary={successSummary || fullSummary}
         onAction={onSuccessAction ?? restartBookingFlow}
       />
@@ -313,6 +316,7 @@ export function GuestBookingPage({
 
     try {
       await onBookingSubmit?.(draft);
+      setSuccessGuestEmail(trimmedEmail);
       setSuccessSummary(
         formatSummary({
           eventTypeTitle: selectedEventType.title,
