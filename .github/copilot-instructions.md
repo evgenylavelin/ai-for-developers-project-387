@@ -23,3 +23,4 @@
 - Keep requirement and business-rule details anchored to [README.md](../README.md); update that file when project-level behavior changes.
 - When implementation starts, keep frontend and backend changes aligned with the contract-first architecture rather than coupling one side to undocumented behavior.
 - Avoid inventing undocumented commands, services, or directories. If the repo does not define them yet, create them explicitly or call out the missing setup.
+- Treat [design.md](../design.md) as the frontend color source of truth. Do not introduce palette deviations, alternate accent families, or hardcoded page colors outside that document unless a later design document updates the palette first.

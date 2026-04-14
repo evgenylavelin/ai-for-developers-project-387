@@ -85,7 +85,7 @@ export function PublicBookingsHome({
       initialSelectedDate && calendarDays.some((day) => day.isoDate === initialSelectedDate),
     );
     const nextSelectedDate =
-      hasInitialSelectedDate ? initialSelectedDate : calendarDays[0]?.isoDate ?? "";
+      hasInitialSelectedDate && initialSelectedDate ? initialSelectedDate : calendarDays[0]?.isoDate ?? "";
 
     setSelectedDate((currentDate) => {
       if (hasInitialSelectedDate) {

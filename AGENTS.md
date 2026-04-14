@@ -145,3 +145,18 @@ When backend tests are present:
 When adding structure or tooling:
 
 * update both this file and `README.md` accordingly
+
+---
+
+## Frontend Color System
+
+The frontend color palette is defined by `design.md`.
+
+Treat `design.md` as the source of truth for page colors and interactive color usage.
+
+When working on frontend UI:
+
+* do not introduce accent hues or tinted surfaces that are not derived from `design.md`
+* do not add warm, pink, beige, purple, blue, or neutral-brand alternatives unless a later design document explicitly replaces or extends the palette
+* prefer semantic CSS variables mapped from `design.md` over hardcoded color literals in components or page styles
+* if the palette needs to change, update `design.md` first and then align the frontend implementation
