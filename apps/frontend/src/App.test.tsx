@@ -1419,7 +1419,9 @@ describe("App", () => {
   });
 
   it("renders wizard event type duration above the title like the public filter chip", () => {
-    render(<GuestBookingPage eventTypes={multiEventTypes} datesByEventType={bookingSchedule} />);
+    const datesByEventType = buildAvailableDatesFromSchedule(bookingSchedule, multiEventTypes, []);
+
+    render(<GuestBookingPage eventTypes={multiEventTypes} datesByEventType={datesByEventType} />);
 
     const strategyCard = screen.getByRole("button", {
       name: "Стратегическая сессия, 30 мин",
