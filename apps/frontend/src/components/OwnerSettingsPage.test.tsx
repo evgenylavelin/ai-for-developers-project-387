@@ -47,18 +47,22 @@ describe("OwnerSettingsPage", () => {
     expect(screen.getByText("Понедельник, Среда")).toBeInTheDocument();
   });
 
-  it("renders time inputs with 24-hour format", async () => {
+  it("renders time fields as selects with 24-hour format options", async () => {
     render(
       <OwnerSettingsPage workspace="owner-settings" onChangeWorkspace={() => undefined} />,
     );
 
-    const startInput = await screen.findByDisplayValue("09:00");
-    const endInput = screen.getByDisplayValue("18:00");
+    const startSelect = await screen.findByDisplayValue("09:00");
+    const endSelect = screen.getByDisplayValue("18:00");
 
-    expect(startInput).toHaveAttribute("type", "time");
-    expect(endInput).toHaveAttribute("type", "time");
-    expect(startInput).toHaveAttribute("lang", "ru");
-    expect(endInput).toHaveAttribute("lang", "ru");
+    expect(startSelect.tagName).toBe("SELECT");
+    expect(endSelect.tagName).toBe("SELECT");
+
+    const options = Array.from(startSelect.querySelectorAll("option[value]"));
+    const optionValues = options.map((opt) => (opt as HTMLOptionElement).value);
+    expect(optionValues).toContain("00:00");
+    expect(optionValues).toContain("23:30");
+    expect(optionValues.every((v) => !v.includes("AM") && !v.includes("PM"))).toBe(true);
   });
 
   it("shows inline validation when the owner tries to save an empty working-day selection", async () => {

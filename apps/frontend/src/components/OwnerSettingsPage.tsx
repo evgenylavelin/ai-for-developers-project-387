@@ -3,6 +3,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { WorkspaceHero } from "./WorkspaceHero";
 import {
   createEmptyOwnerSchedule,
+  timeSlotOptions,
   toggleWorkingDay,
   validateOwnerScheduleForm,
   weekdayOptions,
@@ -208,14 +209,21 @@ export function OwnerSettingsPage({
                         *
                       </span>
                     </span>
-                    <input
-                      type="time"
-                      lang="ru"
+                    <select
                       value={schedule.startTime}
                       required
                       disabled={saving}
                       onChange={(event) => handleTimeChange("startTime", event.target.value)}
-                    />
+                    >
+                      <option value="" disabled>
+                        —
+                      </option>
+                      {timeSlotOptions.map((slot) => (
+                        <option key={slot} value={slot}>
+                          {slot}
+                        </option>
+                      ))}
+                    </select>
                   </label>
 
                   <label className="field">
@@ -225,14 +233,21 @@ export function OwnerSettingsPage({
                         *
                       </span>
                     </span>
-                    <input
-                      type="time"
-                      lang="ru"
+                    <select
                       value={schedule.endTime}
                       required
                       disabled={saving}
                       onChange={(event) => handleTimeChange("endTime", event.target.value)}
-                    />
+                    >
+                      <option value="" disabled>
+                        —
+                      </option>
+                      {timeSlotOptions.map((slot) => (
+                        <option key={slot} value={slot}>
+                          {slot}
+                        </option>
+                      ))}
+                    </select>
                   </label>
                 </div>
 
