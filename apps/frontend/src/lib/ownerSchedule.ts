@@ -18,15 +18,6 @@ export const weekdayMetadata: WeekdayOption[] = [
 
 export const weekdayOptions = weekdayMetadata;
 
-export const timeSlotOptions: string[] = Array.from(
-  { length: 48 },
-  (_, index) => {
-    const hour = Math.floor(index / 2);
-    const minute = (index % 2) * 30;
-    return `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
-  },
-);
-
 const weekdayOrder = new Map(weekdayMetadata.map((weekday, index) => [weekday.value, index]));
 
 export function createEmptyOwnerSchedule(): OwnerSchedule {

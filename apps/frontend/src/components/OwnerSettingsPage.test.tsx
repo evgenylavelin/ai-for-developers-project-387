@@ -1,4 +1,4 @@
-import { render, screen, within } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -47,31 +47,18 @@ describe("OwnerSettingsPage", () => {
     expect(screen.getByText("Понедельник, Среда")).toBeInTheDocument();
   });
 
-  it("displays time fields as selects with 24-hour format options", async () => {
+  it("renders time inputs with 24-hour format", async () => {
     render(
       <OwnerSettingsPage workspace="owner-settings" onChangeWorkspace={() => undefined} />,
     );
 
-    const startSelect = await screen.findByDisplayValue("09:00");
-    const endSelect = screen.getByDisplayValue("18:00");
+    const startInput = await screen.findByDisplayValue("09:00");
+    const endInput = screen.getByDisplayValue("18:00");
 
-    expect(startSelect.tagName).toBe("SELECT");
-    expect(endSelect.tagName).toBe("SELECT");
-
-    const startOptions = within(startSelect as HTMLElement).getAllByRole("option");
-    const endOptions = within(endSelect as HTMLElement).getAllByRole("option");
-
-    for (const option of [...startOptions, ...endOptions]) {
-      const value = (option as HTMLOptionElement).value;
-      if (!value) {
-        continue;
-      }
-      expect(value).toMatch(/^\d{2}:\d{2}$/);
-      expect(value).not.toMatch(/AM|PM/i);
-    }
-
-    expect(startOptions.some((o) => (o as HTMLOptionElement).value === "09:00")).toBe(true);
-    expect(endOptions.some((o) => (o as HTMLOptionElement).value === "18:00")).toBe(true);
+    expect(startInput).toHaveAttribute("type", "time");
+    expect(endInput).toHaveAttribute("type", "time");
+    expect(startInput).toHaveAttribute("lang", "ru");
+    expect(endInput).toHaveAttribute("lang", "ru");
   });
 
   it("shows inline validation when the owner tries to save an empty working-day selection", async () => {

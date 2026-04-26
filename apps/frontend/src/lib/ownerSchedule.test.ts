@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 
 import {
   createEmptyOwnerSchedule,
-  timeSlotOptions,
   toggleWorkingDay,
   validateOwnerScheduleForm,
   weekdayOptions,
@@ -89,25 +88,5 @@ describe("ownerSchedule helpers", () => {
         endTime: "18:00",
       }),
     ).toBe("");
-  });
-
-  describe("timeSlotOptions", () => {
-    it("contains 48 half-hour slots from 00:00 to 23:30", () => {
-      expect(timeSlotOptions).toHaveLength(48);
-      expect(timeSlotOptions[0]).toBe("00:00");
-      expect(timeSlotOptions[47]).toBe("23:30");
-    });
-
-    it("includes common working hours in 24-hour format", () => {
-      expect(timeSlotOptions).toContain("09:00");
-      expect(timeSlotOptions).toContain("18:00");
-    });
-
-    it("never contains AM or PM suffixes", () => {
-      for (const slot of timeSlotOptions) {
-        expect(slot).not.toMatch(/AM|PM/i);
-        expect(slot).toMatch(/^\d{2}:\d{2}$/);
-      }
-    });
   });
 });

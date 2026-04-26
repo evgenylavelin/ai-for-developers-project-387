@@ -890,24 +890,13 @@ h1 {
 }
 
 .field textarea,
-.field input,
-.field select {
+.field input {
   min-height: 46px;
   padding: 0 14px;
   border: 1px solid var(--color-border);
   border-radius: 16px;
   background: rgba(249, 255, 244, 0.94);
   color: var(--color-text-primary);
-}
-
-.field select {
-  -webkit-appearance: none;
-  appearance: none;
-  padding-right: 36px;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%23555' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 14px center;
-  cursor: pointer;
 }
 
 .field textarea {
