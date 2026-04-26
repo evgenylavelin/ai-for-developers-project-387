@@ -1,4 +1,4 @@
-import { render, screen, within } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -45,6 +45,24 @@ describe("OwnerSettingsPage", () => {
     );
     expect(screen.getByRole("button", { name: "Среда" })).toHaveAttribute("aria-pressed", "true");
     expect(screen.getByText("Понедельник, Среда")).toBeInTheDocument();
+  });
+
+  it("renders time fields as selects with 24-hour format options", async () => {
+    render(
+      <OwnerSettingsPage workspace="owner-settings" onChangeWorkspace={() => undefined} />,
+    );
+
+    const startSelect = await screen.findByDisplayValue("09:00");
+    const endSelect = screen.getByDisplayValue("18:00");
+
+    expect(startSelect.tagName).toBe("SELECT");
+    expect(endSelect.tagName).toBe("SELECT");
+
+    const options = Array.from(startSelect.querySelectorAll("option[value]"));
+    const optionValues = options.map((opt) => (opt as HTMLOptionElement).value);
+    expect(optionValues).toContain("00:00");
+    expect(optionValues).toContain("23:30");
+    expect(optionValues.every((v) => !v.includes("AM") && !v.includes("PM"))).toBe(true);
   });
 
   it("shows inline validation when the owner tries to save an empty working-day selection", async () => {
