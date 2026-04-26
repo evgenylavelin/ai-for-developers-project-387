@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 
 import { AppError } from "../lib/errors.js";
+import { isValidEmail } from "../lib/validation.js";
 import {
   addMinutes,
   bookingWindowEnd,
@@ -168,6 +169,10 @@ function toCreateBookingInput(input: unknown): CreateBookingInput {
 
   if (!isNonEmptyString(guestEmail)) {
     throw new AppError(400, "bad_request", "guestEmail must be a non-empty string.");
+  }
+
+  if (!isValidEmail(guestEmail.trim())) {
+    throw new AppError(400, "bad_request", "guestEmail must be a valid email address.");
   }
 
   return {

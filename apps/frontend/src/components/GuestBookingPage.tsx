@@ -5,6 +5,7 @@ import {
   deriveEntryState,
   formatSummary,
 } from "../lib/guestFlow";
+import { isValidEmail } from "../lib/validation";
 import type { AvailableDatesByEventType, BookingDraft, EventType, SlotDate } from "../types";
 import { ContactsStep } from "./ContactsStep";
 import { DateTimeStep } from "./DateTimeStep";
@@ -66,10 +67,6 @@ function writeStoredGuestContacts(contacts: StoredGuestContacts) {
   } catch {
     // Ignore storage failures and keep the form usable.
   }
-}
-
-function isValidEmail(value: string): boolean {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 }
 
 function formatDuration(durationMinutes: number): string {
