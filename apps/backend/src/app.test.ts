@@ -9,6 +9,7 @@ import { InMemoryBookingRepository } from "./repositories/inMemoryBookingReposit
 import { InMemoryEventTypeRepository } from "./repositories/inMemoryEventTypeRepository.js";
 import { InMemoryScheduleRepository } from "./repositories/inMemoryScheduleRepository.js";
 import { BookingService } from "./services/bookingService.js";
+import { isValidEmail } from "./lib/validation.js";
 
 describe("backend routes", () => {
   it("serves the built frontend index when a dist directory is available", async () => {
@@ -1039,6 +1040,134 @@ describe("backend routes", () => {
     }
 
     await app.close();
+  });
+
+  it("rejects bookings with invalid email formats", async () => {
+    const app = createApp();
+    const bookingStart = nextBookableSlotStart(new Date());
+    const bookingEnd = new Date(bookingStart.getTime() + 30 * 60 * 1000);
+
+    const eventTypeResponse = await app.inject({
+      method: "POST",
+      url: "/owner/event-types",
+      payload: {
+        title: "Тест email",
+        description: "Проверка валидации email.",
+        durationMinutes: 30,
+      },
+    });
+
+    const { id: eventTypeId } = eventTypeResponse.json() as { id: string };
+
+    const invalidEmails = [
+      ".test@example.com",
+      "test.@example.com",
+      "test..name@example.com",
+      "test@.example.com",
+      "test@example..com",
+      "test@example",
+      "notanemail",
+      "ivan@ex.a",
+    ];
+
+    for (const invalidEmail of invalidEmails) {
+      const response = await app.inject({
+        method: "POST",
+        url: "/bookings",
+        payload: {
+          eventTypeId,
+          startAt: bookingStart.toISOString(),
+          endAt: bookingEnd.toISOString(),
+          guestName: "Guest",
+          guestEmail: invalidEmail,
+        },
+      });
+
+      expect(response.statusCode).toBe(400);
+      expect(response.json()).toEqual({
+        code: "bad_request",
+        message: "guestEmail must be a valid email address.",
+      });
+    }
+
+    await app.close();
+  });
+
+  it("accepts bookings with valid email formats", async () => {
+    const validEmails = [
+      "user@example.com",
+      "user+tag@example.com",
+      "user_name@sub.domain.com",
+      "a@b.cd",
+      "A@B.CO",
+    ];
+
+    for (const validEmail of validEmails) {
+      const app = createApp();
+
+      const eventTypeResponse = await app.inject({
+        method: "POST",
+        url: "/owner/event-types",
+        payload: {
+          title: "Тест email",
+          description: "Проверка валидации email.",
+          durationMinutes: 30,
+        },
+      });
+
+      const { id: eventTypeId } = eventTypeResponse.json() as { id: string };
+      const bookingStart = nextBookableSlotStart(new Date());
+      const bookingEnd = new Date(bookingStart.getTime() + 30 * 60 * 1000);
+
+      const response = await app.inject({
+        method: "POST",
+        url: "/bookings",
+        payload: {
+          eventTypeId,
+          startAt: bookingStart.toISOString(),
+          endAt: bookingEnd.toISOString(),
+          guestName: "Guest",
+          guestEmail: validEmail,
+        },
+      });
+
+      expect(response.statusCode).toBe(201);
+      await app.close();
+    }
+  });
+});
+
+describe("isValidEmail", () => {
+  const invalidCases = [
+    ".test@example.com",
+    "test.@example.com",
+    "test..name@example.com",
+    "test@.example.com",
+    "test@example..com",
+    "test@example",
+    "notanemail",
+    "",
+    "   ",
+    "ivan@ex.a",
+    "a".repeat(255) + "@example.com",
+  ];
+
+  const validCases = [
+    "user@example.com",
+    "user+tag@example.com",
+    "user_name@sub.domain.com",
+    "a@b.cd",
+    "A@B.CO",
+    "user-name@example.org",
+    "user.name@example.com",
+  ];
+
+  it.each(invalidCases)("rejects invalid email: %s", (email) => {
+    expect(isValidEmail(email)).toBe(false);
+  });
+
+  it.each(validCases)("accepts valid email: %s", (email) => {
+    expect(isValidEmail(email)).toBe(true);
   });
 });
 

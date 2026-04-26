@@ -69,7 +69,7 @@ function writeStoredGuestContacts(contacts: StoredGuestContacts) {
 }
 
 function isValidEmail(value: string): boolean {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+  return /^[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?!\.)([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$/.test(value);
 }
 
 function formatDuration(durationMinutes: number): string {
