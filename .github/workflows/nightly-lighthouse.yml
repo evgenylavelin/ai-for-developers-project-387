@@ -24,13 +24,13 @@ jobs:
 
       - name: Start app
         run: |
-          npm run start &
-          npx wait-on http://localhost:3000
+          npm run frontend:dev &
+          npx wait-on http://localhost:5173
 
       - name: Run Lighthouse CI
         run: |
           npm install -g @lhci/cli
-          lhci autorun --collect.url=http://localhost:3000 --upload.target=filesystem --upload.outputDir=./lhci-report
+          lhci autorun --collect.url=http://localhost:5173 --upload.target=filesystem --upload.outputDir=./lhci-report
 
       - name: Upload Lighthouse report
         uses: actions/upload-artifact@v4
