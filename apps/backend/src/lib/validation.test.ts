@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { isValidEmail } from "./validation";
+import { isValidEmail } from "./validation.js";
 
 describe("isValidEmail", () => {
   const validEmails = [

@@ -78,7 +78,7 @@ model Booking {
   startAt: utcDateTime;
   endAt: utcDateTime;
   guestName: string;
-  @pattern("^[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?!\\.)([a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,}$")
+  @pattern("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]{1,64}@(?![.])([a-zA-Z0-9-]+[.])+[a-zA-Z]{2,}$")
   guestEmail: string;
   status: BookingStatus;
 }
@@ -104,7 +104,7 @@ model CreateBookingRequest {
   startAt: utcDateTime;
   endAt: utcDateTime;
   guestName: string;
-  @pattern("^[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?!\\.)([a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,}$")
+  @pattern("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]{1,64}@(?![.])([a-zA-Z0-9-]+[.])+[a-zA-Z]{2,}$")
   guestEmail: string;
 }
 
