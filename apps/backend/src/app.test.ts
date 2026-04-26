@@ -949,6 +949,57 @@ describe("backend routes", () => {
     await app.close();
   });
 
+  it("rejects malformed guestEmail with a bad_request response", async () => {
+    const app = createApp();
+    const validSlotStart = nextBookableSlotStart(new Date());
+    const validSlotEnd = new Date(validSlotStart.getTime() + 60 * 60 * 1000);
+
+    const eventTypeResponse = await app.inject({
+      method: "POST",
+      url: "/owner/event-types",
+      payload: {
+        title: "Стратегическая сессия",
+        description: "Разбор целей и следующих шагов.",
+        durationMinutes: 60,
+      },
+    });
+
+    const { id: eventTypeId } = eventTypeResponse.json() as { id: string };
+
+    const invalidEmails = [
+      "notanemail",
+      ".test@example.com",
+      "test.@example.com",
+      "test..name@example.com",
+      "test@.example.com",
+      "test@example..com",
+      "test@example",
+      "user@ex.a",
+    ];
+
+    for (const invalidEmail of invalidEmails) {
+      const response = await app.inject({
+        method: "POST",
+        url: "/bookings",
+        payload: {
+          eventTypeId,
+          startAt: validSlotStart.toISOString(),
+          endAt: validSlotEnd.toISOString(),
+          guestName: "Guest",
+          guestEmail: invalidEmail,
+        },
+      });
+
+      expect(response.statusCode).toBe(400);
+      expect(response.json()).toEqual({
+        code: "bad_request",
+        message: "guestEmail must be a valid email address.",
+      });
+    }
+
+    await app.close();
+  });
+
   it("rejects invalid booking timestamps and endAt values beyond the 14-day cutoff", async () => {
     const app = createApp();
 
