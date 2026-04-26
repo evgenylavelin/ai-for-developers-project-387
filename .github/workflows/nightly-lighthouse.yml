@@ -2,7 +2,7 @@ name: Nightly Lighthouse Report
 
 on:
   schedule:
-    - cron: "0 2 * * *" # 02:00 UTC = 04:00 Paris summer time
+    - cron: "40 19 * * *" # 22:40 Moscow time      
   workflow_dispatch:
 
 jobs:
